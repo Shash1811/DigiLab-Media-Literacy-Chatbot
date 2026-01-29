@@ -2,6 +2,10 @@ from neo4j import GraphDatabase
 import os
 from dotenv import load_dotenv
 from typing import List, Dict, Any
+import warnings
+
+# Suppress Neo4j verbose warnings - FIXED (removed Neo4jWarning which doesn't exist)
+warnings.filterwarnings("ignore")
 
 load_dotenv()
 
@@ -14,7 +18,8 @@ class Neo4jClient:
         
         self.driver = GraphDatabase.driver(
             self.uri,
-            auth=(self.user, self.password)
+            auth=(self.user, self.password),
+            notifications_min_severity='OFF'  # Suppress Neo4j notifications
         )
     
     def close(self):
@@ -98,25 +103,19 @@ class Neo4jClient:
     def get_related_context(self, section_ids: List[str]) -> Dict[str, Any]:
         """Get related context from knowledge graph"""
         with self.driver.session(database=self.database) as session:
-            # Get the sections and related content - FIXED QUERY
+            # Updated query to match ACTUAL Neo4j structure (Section nodes with content)
             query = """
             MATCH (s:Section)
             WHERE s.id IN $section_ids
             OPTIONAL MATCH (s)-[:HAS_SUBSECTION*0..2]->(sub:Section)
-            OPTIONAL MATCH (sub)-[:CONTAINS]->(d:Document)
-            WITH COLLECT(DISTINCT s) + COLLECT(DISTINCT sub) as all_sections,
-                COLLECT(DISTINCT d) as all_docs
+            WITH COLLECT(DISTINCT s) + COLLECT(DISTINCT sub) as all_sections
             UNWIND all_sections as section
-            WITH section, all_docs
-            UNWIND all_docs as doc
             RETURN DISTINCT 
                 section.id as section_id,
                 section.title as section_title,
-                section.path as section_path,
+                section.full_path as section_path,
                 section.level as section_level,
-                doc.id as doc_id,
-                doc.content as content,
-                doc.title as doc_title
+                section.content as content
             ORDER BY section.level
             """
             
@@ -124,15 +123,15 @@ class Neo4jClient:
             context_data = []
             
             for record in result:
-                context_data.append({
-                    'section_id': record['section_id'],
-                    'section_title': record['section_title'],
-                    'section_path': record['section_path'],
-                    'section_level': record['section_level'],
-                    'doc_id': record['doc_id'],
-                    'content': record['content'],
-                    'doc_title': record['doc_title']
-                })
+                # Only add if content exists
+                if record.get('content'):
+                    context_data.append({
+                        'section_id': record['section_id'],
+                        'section_title': record['section_title'],
+                        'section_path': record['section_path'],
+                        'section_level': record['section_level'],
+                        'content': record['content']
+                    })
             
             return {'context': context_data}
     
