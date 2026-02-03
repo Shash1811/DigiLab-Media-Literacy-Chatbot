@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 export function MessageBubble({ message }) {
     const isUser = message.role === "user";
     const [feedback, setFeedback] = useState(null);
-    const [isHovered, setIsHovered] = useState(false);
 
     const handleSpeak = () => {
         if ("speechSynthesis" in window) {
@@ -53,22 +52,13 @@ export function MessageBubble({ message }) {
                     )}
                 </div>
 
-                {/* MESSAGE BODY WITH SIDE ACTIONS */}
-                <div className={cn(
-                    "flex items-center gap-2",
-                    isUser ? "flex-row-reverse" : "flex-row"
-                )}>
-                    {/* Message Bubble */}
-                    <div
-                        className={cn(
-                            "rounded-xl px-4 py-3 text-[15px] leading-relaxed",
-                            isUser
-                                ? "bg-accent text-white rounded-br-md"
-                                : "bg-white border border-black/5 text-foreground dark:bg-[#1a1a1f] dark:border-white/5 rounded-bl-md"
-                        )}
-                    >
-                        {message.content}
-                    </div>
+            <div className={cn(
+                "relative max-w-[55%] rounded-2xl px-3 py-1.5 text-xs leading-tight shadow-sm",
+                isUser
+                    ? "bg-accent text-white rounded-tr-sm"
+                    : "bg-white border border-black/5 text-foreground rounded-tl-sm dark:bg-[#1a1a1f] dark:border-white/5"
+            )}>
+                {message.content}
 
                     {/* Side Action Buttons - Only for bot messages, show on hover */}
                     {!isUser && (
@@ -110,14 +100,31 @@ export function MessageBubble({ message }) {
                     <span>{message.timestamp}</span>
 
                     {!isUser && (
-                        <button
-                            onClick={handleSpeak}
-                            className="flex items-center gap-1 hover:text-accent transition-colors"
-                            title="Read aloud"
-                        >
-                            <MdVolumeUp size={14} />
-                            <span>Read</span>
-                        </button>
+                        <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center space-x-1">
+                                <button
+                                    onClick={() => setFeedback('liked')}
+                                    className={cn("p-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors", feedback === 'liked' ? "text-green-500" : "text-foreground-muted hover:text-green-500")}
+                                    title="Like"
+                                >
+                                    <MdThumbUp size={16} />
+                                </button>
+                                <button
+                                    onClick={() => setFeedback('disliked')}
+                                    className={cn("p-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors", feedback === 'disliked' ? "text-red-500" : "text-foreground-muted hover:text-red-500")}
+                                    title="Dislike"
+                                >
+                                    <MdThumbDown size={16} />
+                                </button>
+                            </div>
+                            <button
+                                onClick={handleSpeak}
+                                className="text-foreground-muted hover:text-accent transition-colors ml-1"
+                                title="Read aloud"
+                            >
+                                <MdVolumeUp size={18} />
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

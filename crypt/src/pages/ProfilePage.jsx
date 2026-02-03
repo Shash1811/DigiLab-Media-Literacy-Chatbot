@@ -1,184 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useLanguage } from "../context/LanguageContext";
 import { useUI } from "../context/UIContext";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
-import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, CreditCard, MapPin, Globe, Smile, Bell, Shield, Settings, ChevronDown, Lock, Smartphone, Laptop, Check, Mail, Eye, EyeOff, Download, Trash2, AlertTriangle, Palette, Moon, Sun, Zap, FileText, FileJson } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { User, Bell, Shield, CreditCard, LogOut, Settings, Globe, ChevronDown } from "lucide-react";
 import { translations } from "../lib/translations";
-import api from "../lib/api";
 
 export function ProfilePage() {
     const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Profile');
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
-    const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false);
-    const [saveStatus, setSaveStatus] = useState(null);
-
-    // Profile State
-    const [profileData, setProfileData] = useState({
-        fullName: "John Doe",
-        preferredName: "Johnny",
-        age: "35",
-        gender: "male",
-        location: "Cambridge, MA",
-        tone: "professional",
-        avatar: null // Will store the preview URL
-    });
-
-    const fileInputRef = useRef(null);
-
-    // Security State
-    const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-
-    // Notifications State
-    const [emailNotifications, setEmailNotifications] = useState({
-        news: true,
-        activity: true,
-        promotions: false
-    });
-    const [pushNotifications, setPushNotifications] = useState({
-        security: true,
-        mentions: true
-    });
-
-    const { theme, setTheme } = useUI();
-    const [privacy, setPrivacy] = useState({
-        publicProfile: false,
-        searchable: true,
-    });
-
-    const toggleEmail = (key) => setEmailNotifications(prev => ({ ...prev, [key]: !prev[key] }));
-    const togglePush = (key) => setPushNotifications(prev => ({ ...prev, [key]: !prev[key] }));
-    const togglePrivacy = (key) => setPrivacy(prev => ({ ...prev, [key]: !prev[key] }));
-
-    const handleDownloadData = (format) => {
-        const userData = {
-            name: "John Doe",
-            email: "john.doe@university.edu",
-            language: language,
-            theme: theme,
-            privacy: privacy,
-            activeSessions: activeSessions.map(s => ({ device: s.device, location: s.location }))
-        };
-
-        const content = `ASVIX PROFILE DATA EXPORT\nGenerated on: ${new Date().toLocaleString()}\n\n` +
-            `Full Name: ${userData.name}\n` +
-            `Email: ${userData.email}\n` +
-            `Language: ${userData.language}\n` +
-            `Theme: ${userData.theme}\n` +
-            `Privacy Settings:\n` +
-            `  - Public Profile: ${userData.privacy.publicProfile ? 'Enabled' : 'Disabled'}\n` +
-            `  - Searchable: ${userData.privacy.searchable ? 'Enabled' : 'Disabled'}\n\n` +
-            `Active Sessions:\n` +
-            userData.activeSessions.map(s => `  - ${s.device} (${s.location})`).join('\n');
-
-        const blob = new Blob([content], { type: format === 'pdf' ? 'application/pdf' : 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `asvix_profile_data.${format}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        setIsDownloadDropdownOpen(false);
-    };
-
-    // Mock Active Sessions
-    const activeSessions = [
-        { id: 1, device: 'Windows PC', location: 'Cambridge, MA, USA', lastActive: 'Current Session', icon: <Laptop className="h-5 w-5" /> },
-        { id: 2, device: 'iPhone 13 Pro', location: 'Boston, MA, USA', lastActive: '2 hours ago', icon: <Smartphone className="h-5 w-5" /> },
-    ];
-
-    // Reusable Toggle Component
-    const Toggle = ({ enabled, onChange, icon: Icon, title, description }) => (
-        <div className="flex items-center justify-between py-4 border-b border-white/5 last:border-0">
-            <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                    {Icon && <Icon className="h-4 w-4 text-accent" />}
-                    <h3 className="text-base font-medium text-foreground">{title}</h3>
-                </div>
-                {description && <p className="text-sm text-foreground-muted">{description}</p>}
-            </div>
-            <button
-                onClick={onChange}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${enabled ? 'bg-accent' : 'bg-gray-200 dark:bg-white/10'}`}
-            >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
-            </button>
-        </div>
-    );
-
-    // Backend State & Logic
-    const [loading, setLoading] = useState(false);
-    const [userData, setUserData] = useState(null);
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        preferredName: "",
-        age: "",
-        gender: "",
-        location: "",
-        primaryLanguage: "en",
-        profilePhoto: "",
-        preferences: {
-            tone: "neutral"
-        }
-    });
-
-    useEffect(() => {
-        fetchUserData();
-    }, []);
-
-    const fetchUserData = async () => {
-        try {
-            const { data } = await api.get('/auth/me');
-            setUserData(data);
-            setFormData({
-                name: data.name || "",
-                email: data.email || "",
-                preferredName: data.preferredName || "",
-                age: data.age || "",
-                gender: data.gender || "",
-                location: data.location || "",
-                primaryLanguage: data.primaryLanguage || "en",
-                profilePhoto: data.profilePhoto || "",
-                preferences: {
-                    tone: data.preferences?.tone || "neutral"
-                }
-            });
-            // Also sync app language if user has one saved
-            if (data.primaryLanguage && translations[data.primaryLanguage]) {
-                setLanguage(data.primaryLanguage);
-            }
-        } catch (error) {
-            console.error("Failed to fetch user data", error);
-        }
-    };
-
-    const handleUpdateProfile = async () => {
-        setLoading(true);
-        try {
-            // Update formData with current app language before saving
-            const updatedData = {
-                ...formData,
-                primaryLanguage: language
-            };
-
-            const { data } = await api.put('/auth/profile', updatedData);
-            setUserData(data);
-            localStorage.setItem("user", JSON.stringify(data));
-            alert(t('profile.saveChanges') + " Success!"); // Simple feedback
-        } catch (error) {
-            console.error("Failed to update profile", error);
-            alert("Failed to update profile");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleSignOut = () => {
         localStorage.removeItem("user");
@@ -223,33 +57,6 @@ export function ProfilePage() {
         return map[code] || 'english';
     };
 
-    const handlePhotoChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileData(prev => ({ ...prev, avatar: reader.result }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleSaveChanges = () => {
-        // Mocking API call
-        setSaveStatus('saving');
-        setTimeout(() => {
-            setSaveStatus('success');
-            setTimeout(() => setSaveStatus(null), 3000);
-        }, 8000);
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setProfileData(prev => ({ ...prev, [name]: value }));
-    };
-
-    if (!userData && !formData.email) return <div className="p-8 text-center">Loading...</div>;
-
     return (
         <div className="mx-auto max-w-4xl space-y-8 pb-12 relative">
             {saveStatus === 'success' && (
@@ -273,11 +80,12 @@ export function ProfilePage() {
                                 : 'text-foreground-muted hover:bg-white/5 hover:text-foreground'
                                 }`}
                         >
-                            {item === 'Profile' && <User className="h-4 w-4" />}
-                            {item === 'Notifications' && <Bell className="h-4 w-4" />}
-                            {item === 'Security' && <Shield className="h-4 w-4" />}
-                            {item === 'Settings' && <Settings className="h-4 w-4" />}
-                            {item === 'Profile' ? t('nav.profile') : t(`profile.${item.toLowerCase()}`)}
+                            {/* Map tab names to translation keys */}
+                            {item === 'Profile' && t('nav.profile')}
+                            {item === 'Notifications' && t('profile.notifications')}
+                            {item === 'Security' && t('profile.security')}
+                            {item === 'Billing' && t('profile.billing')}
+                            {item === 'Settings' && t('profile.settings')}
                         </button>
                     ))}
 
@@ -368,87 +176,15 @@ export function ProfilePage() {
                                 <p className="text-foreground-muted">Choose how you want to be notified</p>
                             </div>
 
-                            {/* Email Notifications */}
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-                                    <Mail className="h-5 w-5 text-accent" />
-                                    <h3 className="text-xl font-medium text-foreground">Email Notifications</h3>
-                                </div>
-                                <div className="space-y-2">
-                                    <Toggle
-                                        enabled={emailNotifications.news}
-                                        onChange={() => toggleEmail('news')}
-                                        title="News & Updates"
-                                        description="Receive updates about new features and improvements"
-                                    />
-                                    <Toggle
-                                        enabled={emailNotifications.activity}
-                                        onChange={() => toggleEmail('activity')}
-                                        title="Account Activity"
-                                        description="Notifications about login attempts and security alerts"
-                                    />
-                                    <Toggle
-                                        enabled={emailNotifications.promotions}
-                                        onChange={() => toggleEmail('promotions')}
-                                        title="Promotions"
-                                        description="Special offers and marketing communications"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Push Notifications */}
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-                                    <Zap className="h-5 w-5 text-accent" />
-                                    <h3 className="text-xl font-medium text-foreground">Push Notifications</h3>
-                                </div>
-                                <div className="space-y-2">
-                                    <Toggle
-                                        enabled={pushNotifications.security}
-                                        onChange={() => togglePush('security')}
-                                        title="Security Alerts"
-                                        description="Instant alerts for critical security events"
-                                    />
-                                    <Toggle
-                                        enabled={pushNotifications.mentions}
-                                        onChange={() => togglePush('mentions')}
-                                        title="Mentions & Comments"
-                                        description="Notifications for direct social interactions"
-                                    />
-                                </div>
-                            </div>
-                        </Card>
-                    ) : activeTab === 'Settings' ? (
-                        <Card className="p-8 space-y-10">
-                            {/* Privacy & Data */}
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-                                    <Shield className="h-5 w-5 text-accent" />
-                                    <h3 className="text-xl font-medium text-foreground">Privacy & Data</h3>
-                                </div>
-                                <div className="space-y-2">
-                                    <Toggle
-                                        enabled={privacy.publicProfile}
-                                        onChange={() => togglePrivacy('publicProfile')}
-                                        icon={User}
-                                        title="Public Profile"
-                                        description="Make your profile visible to other users"
-                                    />
-                                    <Toggle
-                                        enabled={privacy.searchable}
-                                        onChange={() => togglePrivacy('searchable')}
-                                        icon={Eye}
-                                        title="Searchability"
-                                        description="Allow others to find you by email or name"
-                                    />
-                                </div>
-                                <div className="pt-4 relative">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[300px] overflow-y-auto pr-2">
+                                {Object.keys(translations).map((langCode) => (
                                     <Button
                                         variant="outline"
                                         className="gap-2"
                                         onClick={() => setIsDownloadDropdownOpen(!isDownloadDropdownOpen)}
                                     >
-                                        <Download className="h-4 w-4" /> Download Information <ChevronDown className="h-4 w-4 opacity-50" />
+                                        {/* Display the language name using the translation key */}
+                                        {t(`${getLangKey(langCode)}`)}
                                     </Button>
 
                                     {isDownloadDropdownOpen && (
@@ -501,16 +237,10 @@ export function ProfilePage() {
                             <Card className="p-8 space-y-8">
                                 {/* Profile Pic Section */}
                                 <div className="flex items-center space-x-6">
-                                    <div
-                                        onClick={() => fileInputRef.current.click()}
-                                        className="h-24 w-24 rounded-full bg-accent/20 flex items-center justify-center text-4xl border-2 border-accent/50 overflow-hidden relative group cursor-pointer"
-                                    >
-                                        {profileData.avatar ? (
-                                            <img src={profileData.avatar} alt="Avatar" className="h-full w-full object-cover" />
-                                        ) : (
-                                            <User className="h-10 w-10 text-accent" />
-                                        )}
-                                        <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-opacity">
+                                    <div className="h-24 w-24 rounded-full bg-accent/20 flex items-center justify-center text-4xl border-2 border-accent/50 overflow-hidden relative group">
+                                        {/* Placeholder for actual image if available, else icon */}
+                                        <User className="h-10 w-10 text-accent" />
+                                        <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-opacity">
                                             <span className="text-xs text-white font-medium">Change</span>
                                         </div>
                                     </div>
@@ -522,16 +252,9 @@ export function ProfilePage() {
                                         onChange={handlePhotoChange}
                                     />
                                     <div className="flex-1">
-                                        <h3 className="text-xl font-medium text-foreground">{profileData.fullName}</h3>
+                                        <h3 className="text-xl font-medium text-foreground">John Doe</h3>
                                         <p className="text-foreground-muted">Professor of Physics</p>
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="mt-3"
-                                            onClick={() => fileInputRef.current.click()}
-                                        >
-                                            {t('profile.changeAvatar')}
-                                        </Button>
+                                        <Button variant="secondary" size="sm" className="mt-3">{t('profile.changeAvatar')}</Button>
                                     </div>
                                     <div className="flex flex-col items-end justify-center">
                                         <div className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-xs font-medium">
@@ -545,43 +268,22 @@ export function ProfilePage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-xs font-mono text-foreground-subtle uppercase">{t('profile.firstName')}</label>
-                                            <Input
-                                                name="fullName"
-                                                value={profileData.fullName}
-                                                onChange={handleInputChange}
-                                                placeholder={t('profile.firstName')}
-                                            />
+                                            <Input defaultValue="John Doe" placeholder={t('profile.firstName')} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-mono text-foreground-subtle uppercase">{t('profile.preferredName')}</label>
-                                            <Input
-                                                name="preferredName"
-                                                value={profileData.preferredName}
-                                                onChange={handleInputChange}
-                                                placeholder={t('profile.preferredName')}
-                                            />
+                                            <Input defaultValue="Johnny" placeholder={t('profile.preferredName')} />
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-xs font-mono text-foreground-subtle uppercase">{t('profile.age')}</label>
-                                            <Input
-                                                name="age"
-                                                type="number"
-                                                value={profileData.age}
-                                                onChange={handleInputChange}
-                                                placeholder={t('profile.age')}
-                                            />
+                                            <Input type="number" defaultValue="35" placeholder={t('profile.age')} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-mono text-foreground-subtle uppercase">{t('profile.gender')}</label>
-                                            <select
-                                                name="gender"
-                                                value={profileData.gender}
-                                                onChange={handleInputChange}
-                                                className="flex h-10 w-full rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white border-black/10 text-foreground focus-visible:ring-accent/50 focus-visible:ring-offset-white shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground dark:focus-visible:ring-accent/50 dark:focus-visible:ring-offset-background-base"
-                                            >
+                                            <select className="flex h-10 w-full rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white border-black/10 text-foreground focus-visible:ring-accent/50 focus-visible:ring-offset-white shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground dark:focus-visible:ring-accent/50 dark:focus-visible:ring-offset-background-base">
                                                 <option value="" disabled>Select Gender</option>
                                                 <option value="male">Male</option>
                                                 <option value="female">Female</option>
@@ -591,12 +293,7 @@ export function ProfilePage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-mono text-foreground-subtle uppercase">{t('profile.location')}</label>
-                                            <Input
-                                                name="location"
-                                                value={profileData.location}
-                                                onChange={handleInputChange}
-                                                placeholder={t('profile.location')}
-                                            />
+                                            <Input defaultValue="Cambridge, MA" placeholder={t('profile.location')} />
                                         </div>
                                     </div>
 
@@ -637,12 +334,7 @@ export function ProfilePage() {
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-xs font-mono text-foreground-subtle uppercase">{t('profile.tone')}</label>
-                                                <select
-                                                    name="tone"
-                                                    value={profileData.tone}
-                                                    onChange={handleInputChange}
-                                                    className="flex h-10 w-full rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white border-black/10 text-foreground focus-visible:ring-accent/50 focus-visible:ring-offset-white shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground dark:focus-visible:ring-accent/50 dark:focus-visible:ring-offset-background-base"
-                                                >
+                                                <select className="flex h-10 w-full rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white border-black/10 text-foreground focus-visible:ring-accent/50 focus-visible:ring-offset-white shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground dark:focus-visible:ring-accent/50 dark:focus-visible:ring-offset-background-base">
                                                     <option value="professional">Professional</option>
                                                     <option value="casual">Casual</option>
                                                     <option value="friendly">Friendly</option>
@@ -661,21 +353,15 @@ export function ProfilePage() {
                                 </div>
 
                                 <div className="flex justify-end pt-4">
-                                    <Button
-                                        onClick={handleSaveChanges}
-                                        disabled={saveStatus === 'saving'}
-                                    >
-                                        {saveStatus === 'saving' ? 'Saving...' : t('profile.saveChanges')}
-                                    </Button>
+                                    <Button>{t('profile.saveChanges')}</Button>
                                 </div>
                             </Card>
 
-                            {/* Appearance Section */}
-                            <Card className="p-8 space-y-10">
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-                                        <Palette className="h-5 w-5 text-accent" />
-                                        <h3 className="text-xl font-medium text-foreground">Appearance</h3>
+                            <Card className="p-8">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <h3 className="text-lg font-medium text-foreground">{t('profile.subscription')}</h3>
+                                        <p className="text-foreground-muted mt-1">You are currently on the <span className="text-accent font-semibold">Pro Academic</span> plan.</p>
                                     </div>
 
                                     <div className="flex gap-4">

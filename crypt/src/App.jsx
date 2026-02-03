@@ -37,7 +37,6 @@ function AnimatedRoutes() {
         {/* Redirect /home to / to support existing links */}
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/roadmaps" element={<RoadmapsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/cookies" element={<CookiePolicyPage />} />

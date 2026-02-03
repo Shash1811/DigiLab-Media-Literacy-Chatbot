@@ -79,7 +79,7 @@ class EnhancedHybridRetriever:
                 graph_context = self.neo4j_client.get_related_context(unique_ids)
                 print(f"📚 Retrieved {len(graph_context.get('context', []))} graph nodes")
             except Exception as e:
-                print(f"⚠️  Neo4j query error: {e}")
+                print(f"⚠️ Neo4j query error: {e}")
                 graph_context = {'context': []}
         
         # 6. Combine context intelligently
@@ -97,9 +97,11 @@ class EnhancedHybridRetriever:
                                  graph_context: Dict) -> str:
         """Build intelligent context with clear section attribution"""
         
-        context = f"""QUESTION: "{original_query}"
+        # CHANGE #1: Modified Context Header
+        context = f"""QUESTION TO ANSWER: "{original_query}"
 
-===== RELEVANT COURSE MATERIAL SECTIONS =====
+===== COURSE MATERIAL RELEVANT TO THIS QUESTION =====
+
 """
         
         # Group results by section to avoid redundancy
@@ -131,23 +133,21 @@ class EnhancedHybridRetriever:
             reverse=True
         )
         
-        # Add sections with clear attribution
+        # CHANGE #2: Removed Excessive Section Formatting
+        # Add sections in answer-friendly format (no excessive formatting)
         for i, (section_path, data) in enumerate(sorted_sections[:5], 1):
-            context += f"\n{'='*70}\n"
-            context += f"SECTION {i}: {section_path}\n"
-            context += f"Relevance Score: {data['max_score']:.3f}\n"
-            context += f"{'='*70}\n\n"
+            # Simple section header
+            context += f"[FROM: {section_path}]\n"
             
-            # Add top chunks from this section
-            for j, chunk in enumerate(data['chunks'][:2], 1):  # Max 2 chunks per section
-                context += f"Content Excerpt {j}:\n"
-                context += f"{chunk['content']}\n\n"
+            # Combine chunks from same section
+            for chunk in data['chunks'][:2]:  # Max 2 chunks per section
+                context += f"{chunk['content'].strip()}\n\n"
+            
+            context += f"{'-'*70}\n\n"
         
         # Add graph context if available
         if graph_context and 'context' in graph_context and graph_context['context']:
-            context += f"\n{'='*70}\n"
-            context += "ADDITIONAL RELATED SECTIONS (from knowledge graph):\n"
-            context += f"{'='*70}\n\n"
+            context += "[RELATED INFORMATION FROM COURSE STRUCTURE]\n\n"
             
             # Group by section
             graph_sections = {}
@@ -158,14 +158,25 @@ class EnhancedHybridRetriever:
                 graph_sections[section].append(item)
             
             for section, items in list(graph_sections.items())[:3]:
-                context += f"\nFrom: {section}\n"
+                context += f"[FROM: {section}]\n"
                 for item in items[:1]:  # Only 1 item per graph section
                     if item.get('content'):
-                        context += f"  • {item['content'][:300]}...\n"
+                        context += f"{item['content'].strip()}\n\n"
+            
+            context += f"{'-'*70}\n\n"
         
-        context += f"\n{'='*70}\n"
-        context += "END OF RETRIEVED MATERIALS\n"
-        context += f"{'='*70}\n"
+        context += f"""===== END OF COURSE MATERIAL =====
+
+CRITICAL INSTRUCTIONS FOR ANSWERING:
+1. Provide a DIRECT, SPECIFIC answer to the question using ONLY the material above
+2. For comparison questions (like "differentiate between X and Y"):
+   - Create a clear comparison structure
+   - List specific characteristics of each item
+   - Highlight the key differences
+3. Always cite which section each piece of information comes from
+4. Do NOT just describe what sections contain - EXTRACT and SYNTHESIZE the answer
+5. If the material is insufficient, state what's missing clearly
+"""
         
         return context
 
