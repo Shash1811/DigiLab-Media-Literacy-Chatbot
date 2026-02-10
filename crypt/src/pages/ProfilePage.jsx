@@ -5,7 +5,7 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Bell, Shield, CreditCard, LogOut, Settings, Globe, ChevronDown } from "lucide-react";
+import { User, Bell, Shield, LogOut, Settings, ChevronDown } from "lucide-react";
 import { translations } from "../lib/translations";
 
 export function ProfilePage() {
@@ -20,38 +20,13 @@ export function ProfilePage() {
         navigate("/login");
     };
 
-    // Helper to get language name
-    const getLanguageName = (langCode) => {
-        // We can either simple return the native name hardcoded here or use translations
-        // Using translations allows "Hindi" to show as "हिंदी" when Hindi is selected.
-        // But for the dropdown options, it's often better to show the Native name always, or both.
-        // For this simple implementation, let's just use the current language's name for it.
-        return t(`common.${getLangKey(langCode)}`);
-    };
-
-    // Helper to map code to key in common.* 
     const getLangKey = (code) => {
         const map = {
-            'en': 'english',
-            'hi': 'hindi',
-            'bn': 'bengali',
-            'te': 'telugu',
-            'mr': 'marathi',
-            'ta': 'tamil',
-            'ur': 'urdu',
-            'gu': 'gujarati',
-            'kn': 'kannada',
-            'ml': 'malayalam',
-            'pa': 'punjabi',
-            'or': 'odia',
-            'as': 'assamese',
-            'es': 'spanish',
-            'fr': 'french',
-            'de': 'german',
-            'zh': 'chinese',
-            'ja': 'japanese',
-            'ru': 'russian',
-            'ar': 'arabic',
+            'en': 'english', 'hi': 'hindi', 'bn': 'bengali', 'te': 'telugu',
+            'mr': 'marathi', 'ta': 'tamil', 'ur': 'urdu', 'gu': 'gujarati',
+            'kn': 'kannada', 'ml': 'malayalam', 'pa': 'punjabi', 'or': 'odia',
+            'as': 'assamese', 'es': 'spanish', 'fr': 'french', 'de': 'german',
+            'zh': 'chinese', 'ja': 'japanese', 'ru': 'russian', 'ar': 'arabic',
             'pt': 'portuguese'
         };
         return map[code] || 'english';
@@ -59,13 +34,6 @@ export function ProfilePage() {
 
     return (
         <div className="mx-auto max-w-4xl space-y-8 pb-12 relative">
-            {saveStatus === 'success' && (
-                <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] bg-green-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
-                    <Check className="h-5 w-5" />
-                    <span className="font-medium">Changes saved successfully!</span>
-                </div>
-            )}
-
             <h1 className="text-3xl font-semibold text-foreground">{t('profile.settings')}</h1>
 
             <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
@@ -80,12 +48,10 @@ export function ProfilePage() {
                                 : 'text-foreground-muted hover:bg-white/5 hover:text-foreground'
                                 }`}
                         >
-                            {/* Map tab names to translation keys */}
-                            {item === 'Profile' && t('nav.profile')}
-                            {item === 'Notifications' && t('profile.notifications')}
-                            {item === 'Security' && t('profile.security')}
-                            {item === 'Billing' && t('profile.billing')}
-                            {item === 'Settings' && t('profile.settings')}
+                            {item === 'Profile' && <><User className="h-4 w-4" />{t('nav.profile')}</>}
+                            {item === 'Notifications' && <><Bell className="h-4 w-4" />{t('profile.notifications')}</>}
+                            {item === 'Security' && <><Shield className="h-4 w-4" />{t('profile.security')}</>}
+                            {item === 'Settings' && <><Settings className="h-4 w-4" />{t('profile.settings')}</>}
                         </button>
                     ))}
 
@@ -107,21 +73,9 @@ export function ProfilePage() {
                                 <p className="text-foreground-muted">Manage your account security preferences</p>
                             </div>
 
-                            {/* Two-Step Verification */}
-                            <Toggle
-                                enabled={twoFactorEnabled}
-                                onChange={() => setTwoFactorEnabled(!twoFactorEnabled)}
-                                icon={Smartphone}
-                                title="Two-Step Verification"
-                                description="Add an extra layer of security to your account"
-                            />
-
                             {/* Change Password */}
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <Lock className="h-4 w-4 text-accent" />
-                                    <h3 className="text-base font-medium text-foreground">Change Password</h3>
-                                </div>
+                                <h3 className="text-base font-medium text-foreground">Change Password</h3>
                                 <div className="grid grid-cols-1 gap-4 max-w-md">
                                     <div className="space-y-2">
                                         <label className="text-xs font-mono text-foreground-subtle uppercase">Current Password</label>
@@ -143,94 +97,22 @@ export function ProfilePage() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Active Sessions */}
-                            <div className="space-y-4 pt-4 border-t border-white/5">
-                                <h3 className="text-base font-medium text-foreground">Active Sessions</h3>
-                                <div className="space-y-3">
-                                    {activeSessions.map((session) => (
-                                        <div key={session.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-black/5 dark:bg-white/5 dark:border-white/5">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 rounded-full bg-accent/10 text-accent">
-                                                    {session.icon}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-foreground">{session.device}</p>
-                                                    <p className="text-xs text-foreground-muted">{session.location} • {session.lastActive}</p>
-                                                </div>
-                                            </div>
-                                            {session.lastActive !== 'Current Session' && (
-                                                <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-500 hover:bg-red-400/10">
-                                                    Revoke
-                                                </Button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                         </Card>
                     ) : activeTab === 'Notifications' ? (
-                        <Card className="p-8 space-y-10">
+                        <Card className="p-8 space-y-8">
                             <div>
                                 <h2 className="text-2xl font-semibold text-foreground">Notification Settings</h2>
                                 <p className="text-foreground-muted">Choose how you want to be notified</p>
                             </div>
-
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[300px] overflow-y-auto pr-2">
-                                {Object.keys(translations).map((langCode) => (
-                                    <Button
-                                        variant="outline"
-                                        className="gap-2"
-                                        onClick={() => setIsDownloadDropdownOpen(!isDownloadDropdownOpen)}
-                                    >
-                                        {/* Display the language name using the translation key */}
-                                        {t(`${getLangKey(langCode)}`)}
-                                    </Button>
-
-                                    {isDownloadDropdownOpen && (
-                                        <div className="absolute left-0 z-50 mt-1 w-48 rounded-md border border-black/10 bg-white shadow-lg dark:border-white/10 dark:bg-[#0F0F12]">
-                                            <div className="p-1">
-                                                <button
-                                                    onClick={() => handleDownloadData('txt')}
-                                                    className="flex w-full items-center gap-2 rounded-sm py-2 px-3 text-sm text-foreground hover:bg-accent/10 hover:text-accent transition-colors"
-                                                >
-                                                    <FileText className="h-4 w-4" /> Download as TXT
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDownloadData('pdf')}
-                                                    className="flex w-full items-center gap-2 rounded-sm py-2 px-3 text-sm text-foreground hover:bg-accent/10 hover:text-accent transition-colors"
-                                                >
-                                                    <FileJson className="h-4 w-4" /> Download as PDF
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                            <p className="text-foreground-muted">Notification preferences coming soon.</p>
+                        </Card>
+                    ) : activeTab === 'Settings' ? (
+                        <Card className="p-8 space-y-8">
+                            <div>
+                                <h2 className="text-2xl font-semibold text-foreground">App Settings</h2>
+                                <p className="text-foreground-muted">Customize your experience</p>
                             </div>
-
-                            {/* Danger Zone */}
-                            <div className="space-y-6 pt-6 border-t border-white/5">
-                                <div className="flex items-center gap-2 text-red-500">
-                                    <AlertTriangle className="h-5 w-5" />
-                                    <h3 className="text-xl font-medium">Danger Zone</h3>
-                                </div>
-                                <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-sm font-medium text-foreground">Deactivate Account</p>
-                                            <p className="text-xs text-foreground-muted">Temporarily disable your account</p>
-                                        </div>
-                                        <Button variant="outline" size="sm" className="text-red-400 border-red-400/20 hover:bg-red-400/10">Deactivate</Button>
-                                    </div>
-                                    <div className="flex items-center justify-between pt-4 border-t border-red-500/10">
-                                        <div>
-                                            <p className="text-sm font-medium text-red-500">Delete Account</p>
-                                            <p className="text-xs text-foreground-muted">Permanently delete your account and data</p>
-                                        </div>
-                                        <Button variant="default" size="sm" className="bg-red-500 hover:bg-red-600 border-none text-white">Delete Account</Button>
-                                    </div>
-                                </div>
-                            </div>
+                            <p className="text-foreground-muted">More settings coming soon.</p>
                         </Card>
                     ) : (
                         <>
@@ -238,19 +120,8 @@ export function ProfilePage() {
                                 {/* Profile Pic Section */}
                                 <div className="flex items-center space-x-6">
                                     <div className="h-24 w-24 rounded-full bg-accent/20 flex items-center justify-center text-4xl border-2 border-accent/50 overflow-hidden relative group">
-                                        {/* Placeholder for actual image if available, else icon */}
                                         <User className="h-10 w-10 text-accent" />
-                                        <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-opacity">
-                                            <span className="text-xs text-white font-medium">Change</span>
-                                        </div>
                                     </div>
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={handlePhotoChange}
-                                    />
                                     <div className="flex-1">
                                         <h3 className="text-xl font-medium text-foreground">John Doe</h3>
                                         <p className="text-foreground-muted">Professor of Physics</p>
@@ -283,7 +154,7 @@ export function ProfilePage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-mono text-foreground-subtle uppercase">{t('profile.gender')}</label>
-                                            <select className="flex h-10 w-full rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white border-black/10 text-foreground focus-visible:ring-accent/50 focus-visible:ring-offset-white shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground dark:focus-visible:ring-accent/50 dark:focus-visible:ring-offset-background-base">
+                                            <select className="flex h-10 w-full rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-white border-black/10 text-foreground focus-visible:ring-accent/50 shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground">
                                                 <option value="" disabled>Select Gender</option>
                                                 <option value="male">Male</option>
                                                 <option value="female">Female</option>
@@ -306,7 +177,7 @@ export function ProfilePage() {
                                                 <div className="relative">
                                                     <button
                                                         onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-                                                        className="flex h-10 w-full items-center justify-between rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white border-black/10 text-foreground focus-visible:ring-accent/50 focus-visible:ring-offset-white shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground dark:focus-visible:ring-accent/50 dark:focus-visible:ring-offset-background-base"
+                                                        className="flex h-10 w-full items-center justify-between rounded-lg border px-3 py-2 text-sm transition-colors bg-white border-black/10 text-foreground shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground"
                                                     >
                                                         {t(`${getLangKey(language)}`)}
                                                         <ChevronDown className="h-4 w-4 opacity-50" />
@@ -334,7 +205,7 @@ export function ProfilePage() {
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-xs font-mono text-foreground-subtle uppercase">{t('profile.tone')}</label>
-                                                <select className="flex h-10 w-full rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white border-black/10 text-foreground focus-visible:ring-accent/50 focus-visible:ring-offset-white shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground dark:focus-visible:ring-accent/50 dark:focus-visible:ring-offset-background-base">
+                                                <select className="flex h-10 w-full rounded-lg border px-3 py-2 text-sm transition-colors bg-white border-black/10 text-foreground shadow-sm dark:bg-[#0F0F12] dark:border-white/10 dark:text-foreground">
                                                     <option value="professional">Professional</option>
                                                     <option value="casual">Casual</option>
                                                     <option value="friendly">Friendly</option>
@@ -362,22 +233,6 @@ export function ProfilePage() {
                                     <div>
                                         <h3 className="text-lg font-medium text-foreground">{t('profile.subscription')}</h3>
                                         <p className="text-foreground-muted mt-1">You are currently on the <span className="text-accent font-semibold">Pro Academic</span> plan.</p>
-                                    </div>
-
-                                    <div className="flex gap-4">
-                                        {[
-                                            { id: 'light', icon: Sun, label: 'Light' },
-                                            { id: 'dark', icon: Moon, label: 'Dark' }
-                                        ].map((t_mode) => (
-                                            <button
-                                                key={t_mode.id}
-                                                onClick={() => setTheme(t_mode.id)}
-                                                className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${theme === t_mode.id ? 'border-accent bg-accent/5' : 'border-black/5 dark:border-white/5 hover:bg-white/5'}`}
-                                            >
-                                                <t_mode.icon className={`h-6 w-6 ${theme === t_mode.id ? 'text-accent' : 'text-foreground-muted'}`} />
-                                                <span className={`text-sm font-medium ${theme === t_mode.id ? 'text-accent' : 'text-foreground'}`}>{t_mode.label}</span>
-                                            </button>
-                                        ))}
                                     </div>
                                 </div>
                             </Card>
