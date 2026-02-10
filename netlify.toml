@@ -1,10 +1,10 @@
 [build]
-  base = "crypt/"
+  base = "crypt"
   command = "npm install && npm run build"
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20.19.0"
 
 # SPA redirect - send all routes to index.html
 [[redirects]]
