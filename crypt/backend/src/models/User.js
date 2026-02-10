@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
 const { getFirestore } = require('../config/db');
+const bcrypt = require('bcrypt');
 
 class User {
     constructor(data) {
@@ -115,6 +115,28 @@ class User {
             });
         } catch (error) {
             throw new Error(`Failed to find user by ID: ${error.message}`);
+        }
+    }
+
+    // Update user by ID
+    static async update(id, updates) {
+        const db = getFirestore();
+
+        try {
+            updates.updatedAt = new Date();
+            await db.collection('users').doc(id).update(updates);
+
+            // Return the updated user
+            const doc = await db.collection('users').doc(id).get();
+            if (!doc.exists) {
+                return null;
+            }
+            return new User({
+                id: doc.id,
+                ...doc.data()
+            });
+        } catch (error) {
+            throw new Error(`Failed to update user: ${error.message}`);
         }
     }
 

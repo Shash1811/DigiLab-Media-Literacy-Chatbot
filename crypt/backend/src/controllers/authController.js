@@ -142,10 +142,10 @@ exports.updateProfile = async (req, res) => {
                 updates.preferences = { ...(user.preferences || {}), ...req.body.preferences };
             }
 
-            const updatedUser = await User.update(user._id, updates);
+            const updatedUser = await User.update(user.id, updates);
 
             res.json({
-                _id: updatedUser._id,
+                id: updatedUser.id,
                 name: updatedUser.name,
                 email: updatedUser.email,
                 role: updatedUser.role,
@@ -157,7 +157,7 @@ exports.updateProfile = async (req, res) => {
                 profilePhoto: updatedUser.profilePhoto,
                 accountStatus: updatedUser.accountStatus,
                 preferences: updatedUser.preferences,
-                token: generateToken(updatedUser._id),
+                token: generateToken(updatedUser.id),
             });
         } else {
             res.status(404).json({ message: 'User not found' });
