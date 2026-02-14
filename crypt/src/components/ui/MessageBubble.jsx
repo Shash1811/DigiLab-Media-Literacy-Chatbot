@@ -95,8 +95,8 @@ export function MessageBubble({ message }) {
 
                 {/* FOOTER */}
                 <div className={cn(
-                    "mt-1 flex items-center text-[11px] text-foreground-muted",
-                    isUser ? "justify-end" : "justify-start gap-4"
+                    "flex items-center space-x-2 transition-opacity",
+                    isHovered ? "opacity-100" : "opacity-0"
                 )}>
                     <span>{message.timestamp}</span>
 
