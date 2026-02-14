@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 export function MessageBubble({ message }) {
     const isUser = message.role === "user";
     const [feedback, setFeedback] = useState(null);
+    const [isHovered, setIsHovered] = useState(false);
 
     const handleSpeak = () => {
         if ("speechSynthesis" in window) {
