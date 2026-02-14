@@ -10,7 +10,7 @@ import { ChatInput } from "../components/ui/ChatInput";
 import { MessageBubble } from "../components/ui/MessageBubble";
 import { PageTransition } from "../components/ui/PageTransition";
 import { VoiceOverlay } from "../components/ui/VoiceOverlay";
-import { ArrowLeft, BookOpen, ChevronRight, FileText, Layout, Lightbulb, MessageSquare, MoreHorizontal, Settings, Share } from "lucide-react";
+import { ArrowLeft, BookOpen, ChevronRight, FileText, Layout, Lightbulb, MessageSquare, MoreHorizontal, Settings, Share, Map, CheckCircle} from "lucide-react";
 import { MdSearch } from "react-icons/md";
 
 const MOCK_MESSAGES = [
