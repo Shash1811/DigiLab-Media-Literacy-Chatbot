@@ -10,11 +10,16 @@ const initializeFirebase = () => {
             return db;
         }
 
+        if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.PRIVATE_KEY) {
+            console.warn('Firebase environment variables missing. Persistence will be disabled.');
+            return null;
+        }
+
         admin.initializeApp({
             credential: admin.credential.cert({
                 projectId: process.env.FIREBASE_PROJECT_ID,
                 clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: process.env.PRIVATE_KEY.replace(/\\n/g, '\n')
+                privateKey: (process.env.PRIVATE_KEY || '').replace(/\\n/g, '\n')
             }),
             databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
         });
@@ -25,7 +30,8 @@ const initializeFirebase = () => {
 
     } catch (error) {
         console.error(`Firebase initialization error: ${error.message}`);
-        process.exit(1);
+        // Don't exit process, allow server to run for other tasks
+        return null;
     }
 };
 
