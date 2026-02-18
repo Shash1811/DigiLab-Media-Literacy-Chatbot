@@ -187,7 +187,7 @@ export function HomePage() {
                 </div>
             </section>
 
-            {/* Pricing Section */}
+            {/* Features Included Section */}
             <section className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="mb-16 text-center">
                     <motion.h2
@@ -198,7 +198,7 @@ export function HomePage() {
                         className="text-3xl font-semibold tracking-tight sm:text-4xl"
                     >
                         <span className="bg-gradient-to-b from-foreground via-foreground/90 to-foreground/70 dark:from-white dark:via-white/95 dark:to-white/70 bg-clip-text text-transparent">
-                            {t('home.pricing.title')}
+                            Everything You Need, Completely Free
                         </span>
                     </motion.h2>
                     <motion.p
@@ -208,71 +208,40 @@ export function HomePage() {
                         transition={{ duration: 0.6, delay: 0.1 }}
                         className="mt-4 text-lg text-foreground-muted"
                     >
-                        {t('home.pricing.subtitle')}
+                        All features are unlocked — no subscriptions, no paywalls.
                     </motion.p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12 max-w-4xl mx-auto">
-                    {/* Free Plan */}
+                <div className="max-w-2xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
-                        <Card className="flex flex-col h-full p-8 border-border-base dark:border-white/5 hover:border-accent/20 dark:hover:border-white/10 transition-colors">
-                            <div className="mb-6">
-                                <h3 className="text-xl font-medium text-foreground">{t('home.pricing.student.title')}</h3>
-                                <div className="mt-4 flex items-baseline">
-                                    <span className="text-4xl font-bold text-foreground">$0</span>
-                                    <span className="ml-2 text-foreground-muted">/month</span>
+                        <Card className="relative flex flex-col p-8 border-accent/20 dark:border-accent/20 bg-white/40 backdrop-blur-xl shadow-xl dark:bg-accent/[0.02]">
+                            <div className="mb-6 text-center">
+                                <div className="inline-flex items-center rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-[10px] font-mono font-medium text-green-500 mb-4">
+                                    100% FREE
                                 </div>
-                                <p className="mt-4 text-sm text-foreground-muted">{t('home.pricing.student.desc')}</p>
+                                <h3 className="text-2xl font-semibold text-foreground">All Features Included</h3>
+                                <p className="mt-2 text-sm text-foreground-muted">Everything you need for learning and teaching — no limits.</p>
                             </div>
-                            <ul className="flex-1 space-y-4 mb-8">
-                                <PricingFeature>{t('pricing.feat.basicChat')}</PricingFeature>
-                                <PricingFeature>{t('pricing.feat.queries')}</PricingFeature>
-                                <PricingFeature>{t('pricing.feat.speed')}</PricingFeature>
-                                <PricingFeature>{t('pricing.feat.public')}</PricingFeature>
-                            </ul>
-                            <Button variant="secondary" className="w-full">
-                                {t('home.pricing.student.btn')}
-                            </Button>
-                        </Card>
-                    </motion.div>
-
-                    {/* Pro Plan */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                    >
-                        <Card className="relative flex flex-col h-full p-8 border-accent/20 dark:border-accent/20 bg-white/40 backdrop-blur-xl shadow-xl dark:bg-accent/[0.02]">
-                            {/* Glow Effect */}
-
-
-                            <div className="mb-6 relative">
-                                <div className="absolute -top-4 right-0 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[10px] font-mono font-medium text-accent-bright">
-                                    {t('home.pricing.pro.recommended')}
-                                </div>
-                                <h3 className="text-xl font-medium text-foreground">{t('home.pricing.pro.title')}</h3>
-                                <div className="mt-4 flex items-baseline">
-                                    <span className="text-4xl font-bold text-foreground">$12</span>
-                                    <span className="ml-2 text-foreground-muted">/month</span>
-                                </div>
-                                <p className="mt-4 text-sm text-foreground-muted">{t('home.pricing.pro.desc')}</p>
-                            </div>
-                            <ul className="flex-1 space-y-4 mb-8">
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                <PricingFeature highlighted>{t('pricing.feat.basicChat')}</PricingFeature>
                                 <PricingFeature highlighted>{t('pricing.feat.unlimited')}</PricingFeature>
                                 <PricingFeature highlighted>{t('pricing.feat.planning')}</PricingFeature>
                                 <PricingFeature highlighted>{t('pricing.feat.files')}</PricingFeature>
                                 <PricingFeature highlighted>{t('pricing.feat.mapping')}</PricingFeature>
-                                <PricingFeature>{t('pricing.feat.support')}</PricingFeature>
+                                <PricingFeature highlighted>{t('pricing.feat.speed')}</PricingFeature>
+                                <PricingFeature highlighted>{t('pricing.feat.public')}</PricingFeature>
+                                <PricingFeature highlighted>{t('pricing.feat.support')}</PricingFeature>
                             </ul>
-                            <Button className="w-full shadow-[0_0_20px_-5px_rgba(94,106,210,0.4)]">
-                                {t('home.pricing.pro.btn')}
-                            </Button>
+                            <Link to="/signup">
+                                <Button className="w-full shadow-[0_0_20px_-5px_rgba(94,106,210,0.4)]">
+                                    Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </Link>
                         </Card>
                     </motion.div>
                 </div>

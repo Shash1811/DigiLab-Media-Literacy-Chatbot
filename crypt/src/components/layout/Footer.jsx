@@ -62,7 +62,7 @@ export function Footer() {
 
                 <div className="mt-16 border-t border-white/5 pt-8 text-center sm:flex sm:items-center sm:justify-between sm:text-left">
                     <p className="text-sm text-foreground-subtle">
-                        &copy; {new Date().getFullYear()} Asvix Academic AI. All rights reserved.
+                        &copy; {new Date().getFullYear()} Digilab A Learning Assistant. All rights reserved.
                     </p>
                     <div className="mt-4 flex justify-center space-x-6 text-sm text-foreground-subtle sm:mt-0">
                         <Link to="#" className="hover:text-foreground transition-colors">Terms</Link>

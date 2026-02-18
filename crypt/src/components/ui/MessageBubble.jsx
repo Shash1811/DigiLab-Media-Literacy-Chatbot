@@ -1,61 +1,92 @@
 import { cn } from "../../lib/utils";
-import { MdPerson, MdSmartToy, MdVolumeUp } from "react-icons/md";
+import { MdPerson, MdSmartToy, MdVolumeUp, MdContentCopy, MdCheck } from "react-icons/md";
 import { motion } from "framer-motion";
-import { Button } from "./Button";
+import { useState } from "react";
 
 export function MessageBubble({ message, isLast }) {
     const isUser = message.role === "user";
+    const [copied, setCopied] = useState(false);
 
     const handleSpeak = () => {
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // Stop current
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(message.content);
             window.speechSynthesis.speak(utterance);
         }
     };
 
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(message.content);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            // fallback
+        }
+    };
+
+    // User message: right-aligned with bubble
+    if (isUser) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex w-full justify-end space-x-3 px-4"
+            >
+                <div className="max-w-[70%] rounded-2xl rounded-tr-sm bg-accent text-white px-5 py-3.5 text-sm leading-relaxed shadow-sm">
+                    {message.content}
+                    <div className="mt-1.5">
+                        <span className="text-[10px] opacity-60 text-accent-100">
+                            {message.timestamp}
+                        </span>
+                    </div>
+                </div>
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 border border-black/5 dark:bg-white/10 dark:border-white/10">
+                    <MdPerson size={18} className="text-foreground" />
+                </div>
+            </motion.div>
+        );
+    }
+
+    // Bot message: full-width, no bubble, clean layout like ChatGPT
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={cn("flex w-full space-x-4 group", isUser ? "justify-end" : "justify-start")}
+            className="flex w-full justify-start space-x-3 px-4 group"
         >
-            {!isUser && (
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/20 border border-accent/20">
-                    <MdSmartToy size={24} className="text-accent" />
-                </div>
-            )}
-
-            <div className={cn(
-                "relative max-w-[80%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed shadow-sm",
-                isUser
-                    ? "bg-accent text-white rounded-tr-sm"
-                    : "bg-white border border-black/5 text-foreground rounded-tl-sm dark:bg-[#1a1a1f] dark:border-white/5"
-            )}>
-                {message.content}
-
-                <div className="mt-2 flex items-center justify-between">
-                    <span className={cn("text-[10px] opacity-60", isUser ? "text-accent-100" : "text-foreground-muted")}>
-                        {message.timestamp}
-                    </span>
-
-                    {!isUser && (
-                        <button
-                            onClick={handleSpeak}
-                            className="text-foreground-muted hover:text-accent transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 ml-2"
-                            title="Read aloud"
-                        >
-                            <MdVolumeUp size={22} />
-                        </button>
-                    )}
-                </div>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 border border-accent/20">
+                <MdSmartToy size={18} className="text-accent" />
             </div>
 
-            {isUser && (
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 border border-black/5 dark:bg-white/10 dark:border-white/10">
-                    <MdPerson size={24} className="text-foreground" />
+            <div className="flex-1 min-w-0 max-w-full">
+                <div className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+                    {message.content}
                 </div>
-            )}
+
+                {/* Actions bar */}
+                <div className="mt-2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    <button
+                        onClick={handleCopy}
+                        className="flex items-center space-x-1 rounded-md px-2 py-1 text-xs text-foreground-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        title="Copy"
+                    >
+                        {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
+                        <span>{copied ? 'Copied' : 'Copy'}</span>
+                    </button>
+                    <button
+                        onClick={handleSpeak}
+                        className="flex items-center space-x-1 rounded-md px-2 py-1 text-xs text-foreground-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        title="Read aloud"
+                    >
+                        <MdVolumeUp size={14} />
+                        <span>Read aloud</span>
+                    </button>
+                    <span className="text-[10px] text-foreground-muted opacity-60 ml-2">
+                        {message.timestamp}
+                    </span>
+                </div>
+            </div>
         </motion.div>
     );
 }
