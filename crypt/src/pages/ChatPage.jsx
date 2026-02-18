@@ -328,10 +328,12 @@ export function ChatPage() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setIsSidebarOpen(false)}
-                                    className="h-9 w-9 text-foreground-muted hover:text-red-500 hover:bg-red-500/10 transition-all rounded-full flex items-center justify-center shrink-0"
+                                    // Keeping button size at h-10 as requested
+                                    className="h-10 w-10 p-0 text-foreground hover:text-red-600 hover:bg-red-500/10 transition-all rounded-full flex items-center justify-center shrink-0 border-2 border-border-base"
                                     title="Close"
                                 >
-                                    <X className="h-5 w-5" />
+                                    {/* Increasing X sign to h-9 w-9 to make it very clear */}
+                                    <X className="h-4 w-4" strokeWidth={2.5} />
                                 </Button>
                             </div>
 
