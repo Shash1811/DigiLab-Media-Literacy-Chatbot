@@ -12,7 +12,7 @@ export function Footer() {
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20">
                                 <BookOpen className="h-5 w-5 text-accent" />
                             </div>
-                            <span className="text-xl font-semibold tracking-tight text-foreground">Asvix</span>
+                            <span className="text-xl font-semibold tracking-tight text-foreground">Digilab</span>
                         </div>
                         <p className="max-w-xs text-sm text-foreground-muted">
                             Empowering the next generation of learners and educators with AI-driven academic intelligence.
