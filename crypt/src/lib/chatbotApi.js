@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const chatbotClient = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: 'https://asvix-digilab.hf.space',
     headers: {
         'Content-Type': 'application/json',
     },
