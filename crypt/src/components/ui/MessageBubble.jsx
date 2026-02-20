@@ -3,6 +3,17 @@ import { MdPerson, MdSmartToy, MdVolumeUp, MdContentCopy, MdCheck } from "react-
 import { motion } from "framer-motion";
 import { useState } from "react";
 
+// Parse **bold** markdown into JSX
+function formatMessage(text) {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+            return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+        }
+        return part;
+    });
+}
+
 export function MessageBubble({ message, isLast }) {
     const isUser = message.role === "user";
     const [copied, setCopied] = useState(false);
@@ -61,7 +72,7 @@ export function MessageBubble({ message, isLast }) {
 
             <div className="flex-1 min-w-0 max-w-full">
                 <div className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
-                    {message.content}
+                    {formatMessage(message.content)}
                 </div>
 
                 {/* Actions bar */}
