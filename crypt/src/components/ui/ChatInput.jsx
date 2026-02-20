@@ -108,7 +108,7 @@ export const ChatInput = React.forwardRef(({ className, onSend, disabled, ...pro
         <form
             onSubmit={handleSubmit}
             className={cn(
-                "relative flex items-end w-full p-3 rounded-3xl transition-all duration-300",
+                "relative flex items-end w-full p-2 rounded-[50px] transition-all duration-300",
                 // Light Mode
                 "bg-white border border-black/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] focus-within:shadow-[0_4px_25px_-5px_rgba(94,106,210,0.15)] focus-within:border-accent/40",
                 // Dark Mode
@@ -128,7 +128,7 @@ export const ChatInput = React.forwardRef(({ className, onSend, disabled, ...pro
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className={cn("h-12 w-12 mr-2 text-foreground-muted hover:text-foreground shrink-0 rounded-full", isUploading && "animate-pulse")}
+                className={cn("h-12 w-12 mr-2 text-foreground-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 shrink-0 !rounded-full transition-all", isUploading && "animate-pulse")}
             >
                 <MdAttachFile size={30} className="rotate-45" />
             </Button>
@@ -153,7 +153,7 @@ export const ChatInput = React.forwardRef(({ className, onSend, disabled, ...pro
                     size="icon"
                     onClick={props.onVoiceToggle}
                     title="Voice Mode"
-                    className="h-12 w-12 text-foreground-muted hover:text-accent shrink-0 rounded-full"
+                    className="h-12 w-12 text-foreground-muted hover:text-accent hover:bg-accent/10 shrink-0 !rounded-full transition-all"
                 >
                     <MdGraphicEq size={30} />
                 </Button>
@@ -164,10 +164,10 @@ export const ChatInput = React.forwardRef(({ className, onSend, disabled, ...pro
                     size="icon"
                     onClick={toggleListening}
                     className={cn(
-                        "h-12 w-12 rounded-full transition-all",
+                        "h-12 w-12 !rounded-full transition-all",
                         isListening
-                            ? "bg-red-500/10 text-red-500 animate-pulse"
-                            : "text-foreground-muted hover:text-foreground"
+                            ? "bg-red-500/10 text-red-500 animate-pulse hover:bg-red-500/20"
+                            : "text-foreground-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
                     )}
                 >
                     {isListening ? <MdMicOff size={30} /> : <MdMic size={30} />}
@@ -178,9 +178,9 @@ export const ChatInput = React.forwardRef(({ className, onSend, disabled, ...pro
                     disabled={!value.trim() || disabled}
                     size="icon"
                     className={cn(
-                        "h-12 w-12 rounded-full transition-all",
+                        "h-12 w-12 !rounded-full transition-all duration-200",
                         value.trim()
-                            ? "bg-accent hover:bg-accent-bright text-white shadow-lg shadow-accent/25"
+                            ? "bg-accent hover:bg-accent-bright text-white shadow-lg shadow-accent/30 hover:shadow-accent/40 hover:scale-105"
                             : "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-foreground-muted"
                     )}
                 >

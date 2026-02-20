@@ -10,7 +10,7 @@ export function UIProvider({ children }) {
 
     const [isBubblesEnabled, setIsBubblesEnabled] = useState(() => {
         const saved = localStorage.getItem("bubblesEnabled");
-        return saved !== null ? JSON.parse(saved) : true;
+        return saved !== null ? JSON.parse(saved) : false;
     });
 
     const toggleShootingStars = () => {

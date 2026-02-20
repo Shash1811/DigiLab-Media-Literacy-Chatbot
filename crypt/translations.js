@@ -17,10 +17,10 @@ export const translations = {
         "chat.share": "Share",
         "chat.savePlan": "Save Plan",
         "chat.inputPlaceholder": "Type your message here...",
-        "chat.disclaimer": "Asvix Academic AI can make mistakes. Verify important information.",
+        "chat.disclaimer": "Digilab Learning Assistant can make mistakes. Verify important information.",
         "chat.guestLimit": "Guest limit reached. Please log in to continue.",
         "chat.loginToContinue": "Login to Continue",
-        "chat.welcomeGuest": "Welcome, Guest! You can chat with Asvix in restricted mode.",
+        "chat.welcomeGuest": "Welcome, Guest! You can chat with Digilab in restricted mode.",
 
         // Profile Page
         "profile.settings": "Account Settings",
@@ -70,7 +70,7 @@ export const translations = {
         "arabic": "Arabic",
         "portuguese": "Portuguese",
 
-        "home.hero.badge": "INTRODUCING ASVIX V2",
+        "home.hero.badge": "INTRODUCING DIGILAB V2",
         "home.hero.title1": "Academic Intelligence",
         "home.hero.title2": "Reimagined.",
         "home.hero.description": "An advanced RAG-powered assistant for the academic world. Tailored experiences for Professors and Students, built on a hybrid knowledge graph engine.",

@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
 
 import { AnimatePresence } from "framer-motion"; // Unused now, but keeping for reference or removal
 
@@ -18,6 +19,22 @@ import { LanguageProvider } from "./context/LanguageContext";
 import { DocumentProvider } from "./context/DocumentContext";
 import { RoadmapProvider } from "./context/RoadmapContext";
 
+// Redirect first-time visitors to /chat, then show HomePage on subsequent visits
+function FirstVisitRedirect() {
+  const navigate = useNavigate();
+  const [isFirstVisit] = useState(() => !localStorage.getItem("hasVisitedBefore"));
+
+  useEffect(() => {
+    if (isFirstVisit) {
+      localStorage.setItem("hasVisitedBefore", "true");
+      navigate("/chat", { replace: true });
+    }
+  }, [isFirstVisit, navigate]);
+
+  if (isFirstVisit) return null;
+  return <HomePage />;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -33,7 +50,7 @@ function AnimatedRoutes() {
 
       {/* Main Layout Routes (With Header/Footer) */}
       <Route element={<Layout />}>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<FirstVisitRedirect />} />
         {/* Redirect /home to / to support existing links */}
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
