@@ -1,11 +1,7 @@
 import axios from 'axios';
 
 const chatbotClient = axios.create({
-<<<<<<< Updated upstream
-    baseURL: 'https://asvix-digilab.hf.space',
-=======
     baseURL: import.meta.env.VITE_CHATBOT_API_URL || 'https://asvix-digilab.hf.space',
->>>>>>> Stashed changes
     headers: {
         'Content-Type': 'application/json',
     },

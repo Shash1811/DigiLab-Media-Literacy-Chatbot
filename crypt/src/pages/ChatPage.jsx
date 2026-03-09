@@ -21,8 +21,6 @@ const INITIAL_MESSAGE = {
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 };
 
-<<<<<<< Updated upstream
-=======
 const GREETING_SENTENCES = [
     "How can I help you?",
     "What's on your mind?",
@@ -33,7 +31,6 @@ const GREETING_SENTENCES = [
     "What's the plan for today?"
 ];
 
->>>>>>> Stashed changes
 const IncognitoIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="11" fill="#1a1a1a" />
@@ -311,11 +308,8 @@ export function ChatPage() {
             }];
             setMessages(updatedWithErr);
 
-<<<<<<< Updated upstream
-=======
             // Save error message state to DB too? 
             // Usually better to only save successful exchanges, but persistent error state can be helpful.
->>>>>>> Stashed changes
             if (!isGuest && !isIncognito) {
                 api.post('/chat/sessions', {
                     sessionId: currentSessionId,
@@ -491,57 +485,18 @@ export function ChatPage() {
                 {/* Header Bar */}
                 <div className={cn(
                     "flex h-16 items-center px-4 sm:px-6 transition-all duration-300 z-50 sticky top-0 backdrop-blur-md",
-<<<<<<< Updated upstream
-                    isIncognito ? "bg-[#1a1a1a] justify-between border-b border-white/5" : "bg-background-base/50 justify-between"
-                )}>
-                    {isIncognito ? (
-                        /* Incognito label */
-=======
                     isIncognito ? "bg-[#1a1a1a] justify-between border-b border-white/5" : "bg-background-base/50 justify-end"
                 )}>
                     {isIncognito && (
->>>>>>> Stashed changes
                         <div className="flex items-center gap-2">
                             <IncognitoIcon className="h-5 w-5 text-slate-300" />
                             <span className="text-sm font-semibold text-slate-200 tracking-tight">Incognito chat</span>
                         </div>
-<<<<<<< Updated upstream
-                    ) : (
-                        /* Normal mode nav links */
-                        <div className="flex items-center gap-1">
-                            <Link
-                                to="/home"
-                                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground hover:bg-accent/10 transition-all"
-                            >
-                                <ArrowLeft className="h-4 w-4" />
-                                <span className="hidden sm:inline">Home</span>
-                            </Link>
-                            {!isGuest && (
-                                <Link
-                                    to={isTeacher ? "/dashboard?mode=teacher" : "/dashboard"}
-                                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground hover:bg-accent/10 transition-all"
-                                >
-                                    <Layout className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Dashboard</span>
-                                </Link>
-                            )}
-                        </div>
-=======
->>>>>>> Stashed changes
                     )}
 
                     {/* Incognito Toggle */}
                     <button
-<<<<<<< Updated upstream
-                        onClick={() => {
-                            setIsIncognito(prev => {
-                                if (!prev) setIsSidebarOpen(false); // close sidebar when turning on incognito
-                                return !prev;
-                            });
-                        }}
-=======
                         onClick={() => setIsIncognito(!isIncognito)}
->>>>>>> Stashed changes
                         title={isIncognito ? "Turn off incognito" : "Turn on incognito"}
                         className={cn(
                             "transition-all duration-200 p-2 rounded-full outline-none focus:outline-none",
@@ -700,16 +655,12 @@ export function ChatPage() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full"
                                 >
-<<<<<<< Updated upstream
-                                    <h1 className="text-4xl font-bold tracking-tight mb-10">How can I help you?</h1>
-=======
                                     <div className="text-center mb-10">
                                         <div className="h-20 w-20 bg-accent/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm border border-accent/5">
                                             <MessageSquare className="h-10 w-10 text-accent" />
                                         </div>
                                         <h1 className="text-4xl font-bold tracking-tight mb-3">{greeting}</h1>
                                     </div>
->>>>>>> Stashed changes
 
                                     <div className="w-full relative px-4">
                                         <ChatInput
@@ -718,23 +669,12 @@ export function ChatPage() {
                                             disabled={isLoading || !isConnected}
                                             onVoiceToggle={() => setIsVoiceMode(true)}
                                         />
-<<<<<<< Updated upstream
-                                        <p className="mt-2 text-center text-[10px] text-foreground-subtle">
-                                            {t('chat.disclaimer')}
-                                        </p>
-=======
->>>>>>> Stashed changes
                                     </div>
                                 </motion.div>
                             ) : (
                                 <div className="flex-1 flex flex-col overflow-hidden">
-<<<<<<< Updated upstream
-                                    <div className="flex-1 overflow-y-auto p-4 sm:p-8" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                                        <div className="mx-auto max-w-5xl space-y-6">
-=======
                                     <div className="flex-1 overflow-y-auto p-4 sm:p-8">
                                         <div className="mx-auto max-w-4xl space-y-6">
->>>>>>> Stashed changes
                                             {messages.map((msg, idx) => (
                                                 <MessageBubble
                                                     key={idx}
