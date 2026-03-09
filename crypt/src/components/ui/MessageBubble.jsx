@@ -42,18 +42,18 @@ export function MessageBubble({ message, isLast }) {
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex w-full justify-end space-x-3 px-4"
+                className="flex w-full justify-end space-x-2 px-4 group"
             >
-                <div className="max-w-[70%] rounded-2xl rounded-tr-sm bg-accent text-white px-5 py-3.5 text-sm leading-relaxed shadow-sm">
+                <div className="max-w-[70%] rounded-2xl rounded-tr-sm bg-accent text-white px-4 py-2 text-sm leading-relaxed shadow-sm">
                     {message.content}
-                    <div className="mt-1.5">
+                    <div className="max-h-0 overflow-hidden opacity-0 group-hover:max-h-6 group-hover:opacity-100 group-hover:mt-1 transition-all duration-200">
                         <span className="text-[10px] opacity-60 text-accent-100">
                             {message.timestamp}
                         </span>
                     </div>
                 </div>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 border border-black/5 dark:bg-white/10 dark:border-white/10">
-                    <MdPerson size={18} className="text-foreground" />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 border border-black/5 dark:bg-white/10 dark:border-white/10">
+                    <MdPerson size={14} className="text-foreground" />
                 </div>
             </motion.div>
         );

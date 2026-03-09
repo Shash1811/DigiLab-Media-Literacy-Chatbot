@@ -14,6 +14,11 @@ import { SignupPage } from "./pages/auth/SignupPage";
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 import { ChatPage } from "./pages/ChatPage";
 import { CookiePolicyPage } from "./pages/CookiePolicyPage";
+import { About } from "./pages/About";
+import { Contributors } from "./pages/Contributors";
+import { Features } from "./pages/Features";
+import { TermsAndConditions } from "./pages/TermsAndConditions";
+import { Methodology } from "./pages/Methodology";
 import { UIProvider } from "./context/UIContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { DocumentProvider } from "./context/DocumentContext";
@@ -33,6 +38,15 @@ function FirstVisitRedirect() {
 
   if (isFirstVisit) return null;
   return <HomePage />;
+}
+
+// Scroll to top on every route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [pathname]);
+  return null;
 }
 
 function AnimatedRoutes() {
@@ -58,6 +72,11 @@ function AnimatedRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/cookies" element={<CookiePolicyPage />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contributors" element={<Contributors />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
+        <Route path="/methodology" element={<Methodology />} />
       </Route>
     </Routes>
   );
@@ -70,6 +89,7 @@ function App() {
         <DocumentProvider>
           <RoadmapProvider>
             <BrowserRouter>
+              <ScrollToTop />
               <AnimatedRoutes />
             </BrowserRouter>
           </RoadmapProvider>

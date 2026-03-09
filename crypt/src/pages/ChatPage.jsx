@@ -21,6 +21,19 @@ const INITIAL_MESSAGE = {
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 };
 
+const IncognitoIcon = ({ className }) => (
+    <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="11" fill="#1a1a1a" />
+        <circle cx="12" cy="12" r="11" stroke="#4a5568" strokeWidth="1.2" />
+        <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M12 7C10 7 8.3 8.1 7.4 9.8h9.2C15.7 8.1 14 7 12 7zM5 11v1h14v-1H5zm11 1.5c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5 2.5-1.1 2.5-2.5-1.1-2.5-2.5-2.5zm-8 0c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5 2.5-1.1 2.5-2.5-1.1-2.5-2.5-2.5zm3.5 3h1v1h-1v-1z"
+            fill="white"
+        />
+    </svg>
+);
+
 export function ChatPage() {
     const { t } = useLanguage();
     const navigate = useNavigate();
@@ -73,6 +86,7 @@ export function ChatPage() {
     const [isConnected, setIsConnected] = React.useState(false);
     const [isCheckingConnection, setIsCheckingConnection] = React.useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+    const [isIncognito, setIsIncognito] = React.useState(false);
     const messagesEndRef = React.useRef(null);
 
     // Check backend health and fetch sessions on mount
@@ -208,7 +222,7 @@ export function ChatPage() {
             setMessages(updatedMessages);
 
             // Save to Database (Node.js/Firestore)
-            if (!isGuest) {
+            if (!isGuest && !isIncognito) {
                 try {
                     const res = await api.post('/chat/sessions', {
                         sessionId: currentSessionId,
@@ -242,9 +256,7 @@ export function ChatPage() {
             }];
             setMessages(updatedWithErr);
 
-            // Save error message state to DB too? 
-            // Usually better to only save successful exchanges, but persistent error state can be helpful.
-            if (!isGuest) {
+            if (!isGuest && !isIncognito) {
                 api.post('/chat/sessions', {
                     sessionId: currentSessionId,
                     messages: updatedWithErr
@@ -328,30 +340,16 @@ export function ChatPage() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setIsSidebarOpen(false)}
-                                    // Keeping button size at h-10 as requested
                                     className="h-10 w-10 p-0 text-foreground hover:text-red-600 hover:bg-red-500/10 transition-all rounded-full flex items-center justify-center shrink-0 border-2 border-border-base"
                                     title="Close"
                                 >
-                                    {/* Increasing X sign to h-9 w-9 to make it very clear */}
                                     <X className="h-4 w-4" strokeWidth={2.5} />
                                 </Button>
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                {/* Connection Status */}
-                                <div className="flex items-center justify-between px-2 py-2 rounded-lg bg-accent/5 dark:bg-white/5">
-                                    <div className="flex items-center gap-2">
-                                        {isCheckingConnection ? (
-                                            <Loader2 className="h-4 w-4 animate-spin text-foreground-muted" />
-                                        ) : isConnected ? (
-                                            <Wifi className="h-4 w-4 text-green-500" />
-                                        ) : (
-                                            <WifiOff className="h-4 w-4 text-red-500" />
-                                        )}
-                                        <span className="text-xs text-foreground-muted">
-                                            {isCheckingConnection ? "Connecting..." : isConnected ? "Connected" : "Offline"}
-                                        </span>
-                                    </div>
+                                {/* Clear History */}
+                                <div className="flex items-center justify-end px-2 py-2">
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -430,245 +428,352 @@ export function ChatPage() {
 
             {/* Main Chat Area */}
             <div className="flex flex-1 flex-col relative">
-                {/* Search, Theme & Actions Top Bar */}
-                {isTeacher && (
-                    <div className="flex h-16 items-center justify-between border-b border-border-base dark:border-white/5 bg-background-base/50 px-4 sm:px-6 backdrop-blur-md">
-                        <div className="flex items-center flex-1 gap-2">
-                            <div className="relative flex-1 max-w-xs">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <MdSearch className="h-5 w-5 text-foreground-muted" />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder={t('chat.searchPlaceholder') || "Search..."}
-                                    className="block w-full rounded-full border-0 bg-white/50 dark:bg-white/5 py-1.5 pl-9 pr-4 text-sm text-foreground placeholder-foreground-subtle ring-1 ring-inset ring-gray-300 dark:ring-white/10 focus:ring-2 focus:ring-accent sm:text-sm sm:leading-6 backdrop-blur-sm transition-all focus:bg-white dark:focus:bg-white/10"
-                                />
-                            </div>
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={toggleTheme}
-                                className="text-foreground-muted hover:text-foreground rounded-full hover:bg-white/10 shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+                {/* Header Bar */}
+                <div className={cn(
+                    "flex h-16 items-center px-4 sm:px-6 transition-all duration-300 z-50 sticky top-0 backdrop-blur-md",
+                    isIncognito ? "bg-[#1a1a1a] justify-between border-b border-white/5" : "bg-background-base/50 justify-between"
+                )}>
+                    {isIncognito ? (
+                        /* Incognito label */
+                        <div className="flex items-center gap-2">
+                            <IncognitoIcon className="h-5 w-5 text-slate-300" />
+                            <span className="text-sm font-semibold text-slate-200 tracking-tight">Incognito chat</span>
+                        </div>
+                    ) : (
+                        /* Normal mode nav links */
+                        <div className="flex items-center gap-1">
+                            <Link
+                                to="/home"
+                                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground hover:bg-accent/10 transition-all"
                             >
-                                <svg className="hidden h-5 w-5 dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                                <svg className="block h-5 w-5 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                                </svg>
-                            </Button>
-                        </div>
-
-                        <div className="flex items-center space-x-1 sm:space-x-2">
-                            <Button variant="ghost" size="sm" className="hidden sm:flex text-foreground-muted hover:text-foreground h-9">
-                                <Share className="h-4 w-4 mr-2" /> {t('chat.share')}
-                            </Button>
-                            <Button size="sm" className="bg-accent text-white hover:bg-accent-bright h-9 px-3 sm:px-4">
-                                <FileText className="h-4 w-4 sm:mr-2" />
-                                <span className="hidden sm:inline">{t('chat.savePlan')}</span>
-                            </Button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Roadmap Topic Header - Shows when learning from a roadmap */}
-                {currentTopic && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="border-b border-border-base dark:border-white/5 bg-gradient-to-r from-accent/5 via-accent/10 to-accent/5 px-4 sm:px-6 py-3 sm:py-4"
-                    >
-                        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-                            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+                                <ArrowLeft className="h-4 w-4" />
+                                <span className="hidden sm:inline">Home</span>
+                            </Link>
+                            {!isGuest && (
                                 <Link
-                                    to="/roadmaps"
-                                    className="flex items-center gap-2 text-xs sm:text-sm text-foreground-muted hover:text-accent transition-colors"
+                                    to={isTeacher ? "/dashboard?mode=teacher" : "/dashboard"}
+                                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground hover:bg-accent/10 transition-all"
                                 >
-                                    <Map className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                    <span className="max-w-[120px] sm:max-w-none truncate">{currentRoadmap?.title}</span>
+                                    <Layout className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Dashboard</span>
                                 </Link>
-                                <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-foreground-muted shrink-0" />
-                                <div className="flex items-center gap-2">
-                                    <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent shrink-0" />
-                                    <span className="font-semibold text-sm sm:text-base text-foreground truncate max-w-[150px] sm:max-w-none">{currentTopic.title}</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                                <Button
-                                    size="sm"
-                                    onClick={handleMarkComplete}
-                                    disabled={markingComplete}
-                                    className={cn(
-                                        "flex-1 sm:flex-none gap-2 transition-all h-8 sm:h-9 py-0",
-                                        isTopicCompleted
-                                            ? "bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20"
-                                            : "bg-accent text-white hover:bg-accent-bright"
-                                    )}
-                                >
-                                    <CheckCircle className={cn("h-4 w-4", isTopicCompleted && "fill-current")} />
-                                    <span className="text-xs sm:text-sm">{markingComplete ? "Saving..." : isTopicCompleted ? "Done" : "Mark Done"}</span>
-                                </Button>
-                                {nextTopic && isTopicCompleted && (
-                                    <Link to={`/chat?roadmapId=${roadmapId}&topicId=${nextTopic.id}`} className="flex-1 sm:flex-none">
-                                        <Button size="sm" variant="outline" className="w-full gap-2 border-accent/20 text-accent hover:bg-accent/5 h-8 sm:h-9 py-0 group">
-                                            <span className="text-xs sm:text-sm">Next</span>
-                                            <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-all" />
-                                        </Button>
-                                    </Link>
-                                )}
-                            </div>
+                            )}
                         </div>
-                    </motion.div>
-                )}
-
-                {/* Sidebar Toggle (+ Icon) - Fixed at Bottom Left */}
-                <AnimatePresence>
-                    {!isSidebarOpen && (
-                        <motion.button
-                            initial={{ scale: 0, opacity: 0, rotate: -90 }}
-                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                            exit={{ scale: 0, opacity: 0, rotate: 90 }}
-                            onClick={() => setIsSidebarOpen(true)}
-                            className="fixed bottom-6 left-6 z-50 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-accent text-white shadow-xl shadow-accent/40 transition-all active:scale-90 hover:scale-105"
-                        >
-                            <Plus className="h-6 w-6 sm:h-7 sm:w-7" />
-                        </motion.button>
                     )}
-                </AnimatePresence>
 
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-8">
-                    <div className="mx-auto max-w-3xl space-y-6">
-                        {messages.map((msg, idx) => (
-                            <MessageBubble
-                                key={idx}
-                                message={msg}
-                            />
-                        ))}
-
-                        {/* Loading Indicator */}
-                        {isLoading && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-3 p-4"
-                            >
-                                <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
-                                    <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <span className="text-sm text-foreground-muted">Thinking</span>
-                                    <motion.span
-                                        animate={{ opacity: [0.2, 1, 0.2] }}
-                                        transition={{ repeat: Infinity, duration: 1.5 }}
-                                        className="text-sm text-foreground-muted"
-                                    >
-                                        ...
-                                    </motion.span>
-                                </div>
-                            </motion.div>
+                    {/* Incognito Toggle */}
+                    <button
+                        onClick={() => {
+                            setIsIncognito(prev => {
+                                if (!prev) setIsSidebarOpen(false); // close sidebar when turning on incognito
+                                return !prev;
+                            });
+                        }}
+                        title={isIncognito ? "Turn off incognito" : "Turn on incognito"}
+                        className={cn(
+                            "transition-all duration-200 p-2 rounded-full outline-none focus:outline-none",
+                            isIncognito
+                                ? "text-slate-400 hover:text-white hover:bg-white/5"
+                                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5"
                         )}
+                    >
+                        {isIncognito ? <X className="h-5 w-5" /> : <IncognitoIcon className="h-7 w-7" />}
+                    </button>
+                </div>
 
-                        <div ref={messagesEndRef} className="h-24"></div> {/* Spacer for bottom input */}
-                    </div>
 
-                    {/* Input Area */}
-                    <div className={cn(
-                        "fixed bottom-0 left-0 w-full bg-gradient-to-t from-background-base via-background-base/95 to-transparent pb-4 sm:pb-6 pt-10 transition-all duration-300 z-40",
-                        isSidebarOpen && "lg:pl-80"
-                    )}>
-                        <div className="mx-auto max-w-3xl px-4 relative">
-                            {/* Mode Selector - Teacher Only */}
-                            {isTeacher && (
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-6 z-20 flex justify-center">
-                                    <motion.div
-                                        layout
-                                        onMouseEnter={() => setIsModeOpen(true)}
-                                        onMouseLeave={() => setIsModeOpen(false)}
-                                        onClick={() => setIsModeOpen(!isModeOpen)}
-                                        className={cn(
-                                            "overflow-hidden backdrop-blur-xl border shadow-lg cursor-pointer",
-                                            isModeOpen
-                                                ? "bg-background/90 border-border-base dark:border-white/10"
-                                                : "bg-accent/10 border-accent/20 hover:bg-accent/20"
-                                        )}
-                                        initial={{ borderRadius: 24 }}
-                                        animate={{
-                                            borderRadius: isModeOpen ? 12 : 24,
-                                        }}
-                                        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                                    >
-                                        <div className="relative flex flex-col items-center justify-center p-1">
-                                            <AnimatePresence mode="wait">
-                                                {!isModeOpen ? (
-                                                    <motion.div
-                                                        key="label"
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        exit={{ opacity: 0 }}
-                                                        transition={{ duration: 0.2 }}
-                                                        className="px-4 py-1.5 flex items-center whitespace-nowrap"
-                                                    >
-                                                        <span className="text-xs font-bold uppercase tracking-wider text-accent">
-                                                            {t(`chat.${teacherView.replace('_', '')}`) || teacherView.replace('_', ' ')}
-                                                        </span>
-                                                    </motion.div>
-                                                ) : (
-                                                    <motion.div
-                                                        key="list"
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        exit={{ opacity: 0 }}
-                                                        transition={{ duration: 0.2 }}
-                                                        className="w-[200px] flex flex-col p-1 space-y-1"
-                                                    >
-                                                        {['Overview', 'Deep Dive', 'Classroom Plan'].map((view) => {
-                                                            const isActive = teacherView === view.toLowerCase().replace(' ', '_');
-                                                            return (
-                                                                <button
-                                                                    key={view}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setTeacherView(view.toLowerCase().replace(' ', '_'));
-                                                                        setIsModeOpen(false);
-                                                                    }}
-                                                                    className={cn(
-                                                                        "w-full text-center px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-                                                                        isActive
-                                                                            ? "bg-accent text-white shadow-sm"
-                                                                            : "text-foreground-muted hover:bg-accent/10 hover:text-foreground"
-                                                                    )}
-                                                                >
-                                                                    {t(`chat.${view.toLowerCase().replace(' ', '')}`) || view}
-                                                                </button>
-                                                            )
-                                                        })}
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
+                {/* ── CHAT CONTENT ── */}
+                <AnimatePresence mode="wait">
+                    {isIncognito ? (
+                        <motion.div
+                            key="incognito-chat"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex flex-1 flex-col bg-[#1a1a1a] text-white overflow-hidden"
+                        >
+                            {messages.length <= 1 ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex-1 flex flex-col items-center justify-center px-6"
+                                >
+                                    <div className="mb-8 p-4 rounded-3xl bg-white/5 transition-transform hover:scale-105 active:scale-95 cursor-default">
+                                        <IncognitoIcon className="h-16 w-16 text-slate-100" />
+                                    </div>
+                                    <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-6 tracking-tight">
+                                        You're incognito
+                                    </h2>
+
+                                    <div className="w-full max-w-4xl mb-8">
+                                        <ChatInput
+                                            onSend={handleSend}
+                                            placeholder={isConnected ? "How can I help you today?" : "Backend not connected..."}
+                                            disabled={isLoading || !isConnected}
+                                            onVoiceToggle={() => setIsVoiceMode(true)}
+                                        />
+                                    </div>
+
+                                    <div className="text-center max-w-md space-y-2 opacity-60">
+                                        <p className="text-sm font-medium">
+                                            Incognito chats aren't saved to history or used to train models.
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <div className="flex-1 flex flex-col overflow-hidden">
+                                    <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+                                        <div className="mx-auto max-w-4xl space-y-6">
+                                            {messages.map((msg, idx) => (
+                                                <MessageBubble
+                                                    key={idx}
+                                                    message={msg}
+                                                />
+                                            ))}
+                                            <div ref={messagesEndRef} className="h-24"></div>
                                         </div>
-                                    </motion.div>
+                                    </div>
+
+                                    {/* Bottom Input Area */}
+                                    <div className={cn(
+                                        "w-full pb-4 sm:pb-6 pt-4 z-40 bg-gradient-to-t from-[#1a1a1a] to-transparent",
+                                    )}>
+                                        <div className="mx-auto max-w-4xl px-4 relative text-center">
+                                            <ChatInput
+                                                onSend={handleSend}
+                                                placeholder={isConnected ? "How can I help you today?" : "Backend not connected..."}
+                                                disabled={isLoading || !isConnected}
+                                                onVoiceToggle={() => setIsVoiceMode(true)}
+                                            />
+                                            <p className="mt-2 text-[10px] text-slate-500">
+                                                Incognito chats aren't saved to history.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="normal-chat"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex flex-col flex-1 overflow-hidden"
+                        >
+                            {/* Sidebar Toggle (+ Icon) - Fixed at Bottom Left */}
+                            <AnimatePresence>
+                                {!isSidebarOpen && (
+                                    <motion.button
+                                        initial={{ scale: 0, opacity: 0, rotate: -90 }}
+                                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                        exit={{ scale: 0, opacity: 0, rotate: 90 }}
+                                        onClick={() => setIsSidebarOpen(true)}
+                                        className="fixed bottom-6 left-6 z-50 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-accent text-white shadow-xl shadow-accent/40 transition-all active:scale-90 hover:scale-105"
+                                    >
+                                        <Plus className="h-6 w-6 sm:h-7 sm:w-7" />
+                                    </motion.button>
+                                )}
+                            </AnimatePresence>
+
+                            {currentTopic && (
+                                <div className="border-b border-border-base dark:border-white/5 bg-gradient-to-r from-accent/5 via-accent/10 to-accent/5 px-4 sm:px-6 py-3 sm:py-4">
+                                    <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                                        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+                                            <Link
+                                                to="/roadmaps"
+                                                className="flex items-center gap-2 text-xs sm:text-sm text-foreground-muted hover:text-accent transition-colors"
+                                            >
+                                                <Map className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                                <span className="max-w-[120px] sm:max-w-none truncate">{currentRoadmap?.title}</span>
+                                            </Link>
+                                            <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-foreground-muted shrink-0" />
+                                            <div className="flex items-center gap-2">
+                                                <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent shrink-0" />
+                                                <span className="font-semibold text-sm sm:text-base text-foreground truncate max-w-[150px] sm:max-w-none">{currentTopic.title}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                                            <Button
+                                                size="sm"
+                                                onClick={handleMarkComplete}
+                                                disabled={markingComplete}
+                                                className={cn(
+                                                    "flex-1 sm:flex-none gap-2 transition-all h-8 sm:h-9 py-0",
+                                                    isTopicCompleted
+                                                        ? "bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20"
+                                                        : "bg-accent text-white hover:bg-accent-bright"
+                                                )}
+                                            >
+                                                <CheckCircle className={cn("h-4 w-4", isTopicCompleted && "fill-current")} />
+                                                <span className="text-xs sm:text-sm">{markingComplete ? "Saving..." : isTopicCompleted ? "Done" : "Mark Done"}</span>
+                                            </Button>
+                                            {nextTopic && isTopicCompleted && (
+                                                <Link to={`/chat?roadmapId=${roadmapId}&topicId=${nextTopic.id}`} className="flex-1 sm:flex-none">
+                                                    <Button size="sm" variant="outline" className="w-full gap-2 border-accent/20 text-accent hover:bg-accent/5 h-8 sm:h-9 py-0 group">
+                                                        <span className="text-xs sm:text-sm">Next</span>
+                                                        <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-all" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
-                            <ChatInput
-                                onSend={handleSend}
-                                placeholder={isConnected ? t('chat.inputPlaceholder') : "Backend not connected..."}
-                                disabled={isLoading || !isConnected}
-                                onVoiceToggle={() => setIsVoiceMode(true)}
-                            />
-                            <p className="mt-2 text-center text-[10px] text-foreground-subtle">
-                                {t('chat.disclaimer')}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                            {messages.length <= 1 ? (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full"
+                                >
+                                    <h1 className="text-4xl font-bold tracking-tight mb-10">How can I help you?</h1>
+
+                                    <div className="w-full relative px-4">
+                                        <ChatInput
+                                            onSend={handleSend}
+                                            placeholder={isConnected ? t('chat.inputPlaceholder') : "Backend not connected..."}
+                                            disabled={isLoading || !isConnected}
+                                            onVoiceToggle={() => setIsVoiceMode(true)}
+                                        />
+                                        <p className="mt-2 text-center text-[10px] text-foreground-subtle">
+                                            {t('chat.disclaimer')}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <div className="flex-1 flex flex-col overflow-hidden">
+                                    <div className="flex-1 overflow-y-auto p-4 sm:p-8" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                                        <div className="mx-auto max-w-5xl space-y-6">
+                                            {messages.map((msg, idx) => (
+                                                <MessageBubble
+                                                    key={idx}
+                                                    message={msg}
+                                                />
+                                            ))}
+
+                                            {isLoading && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="flex items-center gap-3 p-4"
+                                                >
+                                                    <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center">
+                                                        <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="text-sm text-foreground-muted">Thinking</span>
+                                                        <motion.span
+                                                            animate={{ opacity: [0.2, 1, 0.2] }}
+                                                            transition={{ repeat: Infinity, duration: 1.5 }}
+                                                            className="text-sm text-foreground-muted"
+                                                        >
+                                                            ...
+                                                        </motion.span>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                            <div ref={messagesEndRef} className="h-24"></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom Input Area */}
+                                    <div className="w-full bg-gradient-to-t from-background-base via-background-base/95 to-transparent pb-4 sm:pb-6 pt-4 z-40">
+                                        <div className="mx-auto max-w-4xl px-4 relative">
+                                            {/* Mode Selector - Teacher Only */}
+                                            {isTeacher && (
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-20 flex justify-center">
+                                                    <motion.div
+                                                        layout
+                                                        onMouseEnter={() => setIsModeOpen(true)}
+                                                        onMouseLeave={() => setIsModeOpen(false)}
+                                                        onClick={() => setIsModeOpen(!isModeOpen)}
+                                                        className={cn(
+                                                            "overflow-hidden backdrop-blur-xl border shadow-lg cursor-pointer",
+                                                            isModeOpen
+                                                                ? "bg-background/90 border-border-base dark:border-white/10"
+                                                                : "bg-accent/10 border-accent/20 hover:bg-accent/20"
+                                                        )}
+                                                        initial={{ borderRadius: 24 }}
+                                                        animate={{
+                                                            borderRadius: isModeOpen ? 12 : 24,
+                                                        }}
+                                                        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                                                    >
+                                                        <div className="relative flex flex-col items-center justify-center p-1">
+                                                            <AnimatePresence mode="wait">
+                                                                {!isModeOpen ? (
+                                                                    <motion.div
+                                                                        key="label"
+                                                                        initial={{ opacity: 0 }}
+                                                                        animate={{ opacity: 1 }}
+                                                                        exit={{ opacity: 0 }}
+                                                                        transition={{ duration: 0.2 }}
+                                                                        className="px-4 py-1.5 flex items-center whitespace-nowrap"
+                                                                    >
+                                                                        <span className="text-xs font-bold uppercase tracking-wider text-accent">
+                                                                            {t(`chat.${teacherView.replace('_', '')}`) || teacherView.replace('_', ' ')}
+                                                                        </span>
+                                                                    </motion.div>
+                                                                ) : (
+                                                                    <motion.div
+                                                                        key="list"
+                                                                        initial={{ opacity: 0 }}
+                                                                        animate={{ opacity: 1 }}
+                                                                        exit={{ opacity: 0 }}
+                                                                        transition={{ duration: 0.2 }}
+                                                                        className="w-[200px] flex flex-col p-1 space-y-1"
+                                                                    >
+                                                                        {['Overview', 'Deep Dive', 'Classroom Plan'].map((view) => {
+                                                                            const isActive = teacherView === view.toLowerCase().replace(' ', '_');
+                                                                            return (
+                                                                                <button
+                                                                                    key={view}
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        setTeacherView(view.toLowerCase().replace(' ', '_'));
+                                                                                        setIsModeOpen(false);
+                                                                                    }}
+                                                                                    className={cn(
+                                                                                        "w-full text-center px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+                                                                                        isActive
+                                                                                            ? "bg-accent text-white shadow-sm"
+                                                                                            : "text-foreground-muted hover:bg-accent/10 hover:text-foreground"
+                                                                                    )}
+                                                                                >
+                                                                                    {t(`chat.${view.toLowerCase().replace(' ', '')}`) || view}
+                                                                                </button>
+                                                                            )
+                                                                        })}
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        </div>
+                                                    </motion.div>
+                                                </div>
+                                            )}
+
+                                            <ChatInput
+                                                onSend={handleSend}
+                                                placeholder={isConnected ? t('chat.inputPlaceholder') : "Backend not connected..."}
+                                                disabled={isLoading || !isConnected}
+                                                onVoiceToggle={() => setIsVoiceMode(true)}
+                                            />
+                                            <p className="mt-2 text-center text-[10px] text-foreground-subtle">
+                                                {t('chat.disclaimer')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Limit Modal */}
                 <AnimatePresence>
                     {showLimitModal && (
-                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -703,7 +808,6 @@ export function ChatPage() {
                     )}
                 </AnimatePresence>
 
-                {/* Voice Overlay */}
                 <VoiceOverlay
                     isOpen={isVoiceMode}
                     onClose={() => setIsVoiceMode(false)}
@@ -712,5 +816,3 @@ export function ChatPage() {
         </PageTransition>
     );
 }
-
-
