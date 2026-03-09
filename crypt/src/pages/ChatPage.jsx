@@ -21,6 +21,19 @@ const INITIAL_MESSAGE = {
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 };
 
+<<<<<<< Updated upstream
+=======
+const GREETING_SENTENCES = [
+    "How can I help you?",
+    "What's on your mind?",
+    "What is your today's agenda?",
+    "How can I assist you today?",
+    "What would you like to explore?",
+    "Ready to start something new?",
+    "What's the plan for today?"
+];
+
+>>>>>>> Stashed changes
 const IncognitoIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="11" fill="#1a1a1a" />
@@ -89,6 +102,10 @@ export function ChatPage() {
     const [isIncognito, setIsIncognito] = React.useState(false);
     const messagesEndRef = React.useRef(null);
 
+    const [greeting, setGreeting] = React.useState(() => {
+        return GREETING_SENTENCES[Math.floor(Math.random() * GREETING_SENTENCES.length)];
+    });
+
     // Check backend health and fetch sessions on mount
     React.useEffect(() => {
         const initChat = async () => {
@@ -109,10 +126,15 @@ export function ChatPage() {
                     const res = await api.get('/chat/sessions');
                     if (res.data && res.data.length > 0) {
                         setSessions(res.data);
-                        // Load the most recent session by default
-                        const latestSession = res.data[0];
-                        setCurrentSessionId(latestSession.id);
-                        setMessages(latestSession.messages);
+
+                        const sessionId = searchParams.get("sessionId");
+                        if (sessionId) {
+                            const found = res.data.find(s => s.id === sessionId);
+                            if (found) {
+                                setCurrentSessionId(found.id);
+                                setMessages(found.messages);
+                            }
+                        }
                     }
                 } catch (err) {
                     console.error("Failed to fetch sessions from DB:", err);
@@ -121,6 +143,20 @@ export function ChatPage() {
         };
         initChat();
     }, [isGuest]);
+
+    // Handle incoming prompt from URL
+    React.useEffect(() => {
+        const prompt = searchParams.get("prompt");
+        // Only trigger if we have a prompt, we're connected, and it's a fresh chat (only initial message)
+        if (prompt && isConnected && messages.length === 1 && !isLoading) {
+            handleSend(prompt);
+
+            // Clean up the URL to avoid re-triggering on refresh if user stays on page
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete("prompt");
+            navigate({ search: newParams.toString() }, { replace: true });
+        }
+    }, [isConnected, searchParams, messages.length, isLoading]);
 
     // Scroll to bottom when messages change
     React.useEffect(() => {
@@ -177,6 +213,18 @@ export function ChatPage() {
         setMessages([INITIAL_MESSAGE]);
         setCurrentSessionId(null);
         setError(null);
+
+        // Clear sessionId from URL if present
+        if (searchParams.has("sessionId")) {
+            navigate("/chat", { replace: true });
+        }
+
+        // Pick a new random greeting that's different from the current one
+        setGreeting(prev => {
+            const others = GREETING_SENTENCES.filter(g => g !== prev);
+            return others[Math.floor(Math.random() * others.length)];
+        });
+
         if (window.innerWidth < 1024) setIsSidebarOpen(false);
     };
 
@@ -224,19 +272,26 @@ export function ChatPage() {
             // Save to Database (Node.js/Firestore)
             if (!isGuest && !isIncognito) {
                 try {
+                    const sessionTitle = currentSessionId
+                        ? sessions.find(s => s.id === currentSessionId)?.title
+                        : text.substring(0, 30) + "...";
+
                     const res = await api.post('/chat/sessions', {
                         sessionId: currentSessionId,
-                        messages: updatedMessages
+                        messages: updatedMessages,
+                        title: sessionTitle
                     });
 
                     if (res.data) {
+                        // Always move the updated/new session to the top of the list
+                        setSessions(prev => {
+                            const filtered = prev.filter(s => s.id !== res.data.id);
+                            return [res.data, ...filtered];
+                        });
+
                         // Update current sessionId if it was new
                         if (!currentSessionId) {
                             setCurrentSessionId(res.data.id);
-                            setSessions(prev => [res.data, ...prev]);
-                        } else {
-                            // Update existing session in the list
-                            setSessions(prev => prev.map(s => s.id === res.data.id ? res.data : s));
                         }
                     }
                 } catch (dbErr) {
@@ -256,6 +311,11 @@ export function ChatPage() {
             }];
             setMessages(updatedWithErr);
 
+<<<<<<< Updated upstream
+=======
+            // Save error message state to DB too? 
+            // Usually better to only save successful exchanges, but persistent error state can be helpful.
+>>>>>>> Stashed changes
             if (!isGuest && !isIncognito) {
                 api.post('/chat/sessions', {
                     sessionId: currentSessionId,
@@ -431,14 +491,21 @@ export function ChatPage() {
                 {/* Header Bar */}
                 <div className={cn(
                     "flex h-16 items-center px-4 sm:px-6 transition-all duration-300 z-50 sticky top-0 backdrop-blur-md",
+<<<<<<< Updated upstream
                     isIncognito ? "bg-[#1a1a1a] justify-between border-b border-white/5" : "bg-background-base/50 justify-between"
                 )}>
                     {isIncognito ? (
                         /* Incognito label */
+=======
+                    isIncognito ? "bg-[#1a1a1a] justify-between border-b border-white/5" : "bg-background-base/50 justify-end"
+                )}>
+                    {isIncognito && (
+>>>>>>> Stashed changes
                         <div className="flex items-center gap-2">
                             <IncognitoIcon className="h-5 w-5 text-slate-300" />
                             <span className="text-sm font-semibold text-slate-200 tracking-tight">Incognito chat</span>
                         </div>
+<<<<<<< Updated upstream
                     ) : (
                         /* Normal mode nav links */
                         <div className="flex items-center gap-1">
@@ -459,16 +526,22 @@ export function ChatPage() {
                                 </Link>
                             )}
                         </div>
+=======
+>>>>>>> Stashed changes
                     )}
 
                     {/* Incognito Toggle */}
                     <button
+<<<<<<< Updated upstream
                         onClick={() => {
                             setIsIncognito(prev => {
                                 if (!prev) setIsSidebarOpen(false); // close sidebar when turning on incognito
                                 return !prev;
                             });
                         }}
+=======
+                        onClick={() => setIsIncognito(!isIncognito)}
+>>>>>>> Stashed changes
                         title={isIncognito ? "Turn off incognito" : "Turn on incognito"}
                         className={cn(
                             "transition-all duration-200 p-2 rounded-full outline-none focus:outline-none",
@@ -627,7 +700,16 @@ export function ChatPage() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full"
                                 >
+<<<<<<< Updated upstream
                                     <h1 className="text-4xl font-bold tracking-tight mb-10">How can I help you?</h1>
+=======
+                                    <div className="text-center mb-10">
+                                        <div className="h-20 w-20 bg-accent/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm border border-accent/5">
+                                            <MessageSquare className="h-10 w-10 text-accent" />
+                                        </div>
+                                        <h1 className="text-4xl font-bold tracking-tight mb-3">{greeting}</h1>
+                                    </div>
+>>>>>>> Stashed changes
 
                                     <div className="w-full relative px-4">
                                         <ChatInput
@@ -636,15 +718,23 @@ export function ChatPage() {
                                             disabled={isLoading || !isConnected}
                                             onVoiceToggle={() => setIsVoiceMode(true)}
                                         />
+<<<<<<< Updated upstream
                                         <p className="mt-2 text-center text-[10px] text-foreground-subtle">
                                             {t('chat.disclaimer')}
                                         </p>
+=======
+>>>>>>> Stashed changes
                                     </div>
                                 </motion.div>
                             ) : (
                                 <div className="flex-1 flex flex-col overflow-hidden">
+<<<<<<< Updated upstream
                                     <div className="flex-1 overflow-y-auto p-4 sm:p-8" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                                         <div className="mx-auto max-w-5xl space-y-6">
+=======
+                                    <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+                                        <div className="mx-auto max-w-4xl space-y-6">
+>>>>>>> Stashed changes
                                             {messages.map((msg, idx) => (
                                                 <MessageBubble
                                                     key={idx}

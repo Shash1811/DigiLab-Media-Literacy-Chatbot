@@ -1,5 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useEffect } from "react";
 import { useLanguage } from "../context/LanguageContext";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -24,6 +25,21 @@ export function HomePage() {
     const opacity = useTransform(scrollY, [0, 300], [1, 0]);
     const { isShootingStarsEnabled, toggleShootingStars, isBubblesEnabled, toggleBubbles } = useUI();
     const { t } = useLanguage();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.altKey && event.key.toLowerCase() === 'n') {
+                event.preventDefault();
+                navigate('/chat');
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [navigate]);
 
     return (
         <PageTransition className="flex flex-col space-y-32 pb-24">

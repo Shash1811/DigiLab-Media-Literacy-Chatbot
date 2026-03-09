@@ -10,18 +10,22 @@ const initializeFirebase = () => {
             return db;
         }
 
-        if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.PRIVATE_KEY) {
+        const privateKey = (process.env.FIREBASE_PRIVATE_KEY || process.env.PRIVATE_KEY || '').trim().replace(/^["']|["']$/g, '');
+        const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim().replace(/^["']|["']$/g, '');
+        const projectId = (process.env.FIREBASE_PROJECT_ID || '').trim().replace(/^["']|["']$/g, '');
+
+        if (!projectId || !clientEmail || !privateKey) {
             console.warn('Firebase environment variables missing. Persistence will be disabled.');
             return null;
         }
 
         admin.initializeApp({
             credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: (process.env.PRIVATE_KEY || '').replace(/\\n/g, '\n')
+                projectId: projectId,
+                clientEmail: clientEmail,
+                privateKey: privateKey.replace(/\\n/g, '\n')
             }),
-            databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
+            databaseURL: `https://${projectId}.firebaseio.com`
         });
 
         db = admin.firestore();
