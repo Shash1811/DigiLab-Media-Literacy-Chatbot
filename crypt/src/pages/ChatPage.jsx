@@ -1217,9 +1217,9 @@ export function ChatPage() {
 
                                 <div className="flex-1 flex flex-col overflow-hidden">
 
-                                    <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+                                    <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8">
 
-                                        <div className="mx-auto max-w-4xl space-y-6">
+                                        <div className="mx-auto max-w-4xl space-y-4 sm:space-y-6">
 
                                             {messages.map((msg, idx) => (
 
@@ -1227,7 +1227,7 @@ export function ChatPage() {
 
                                             ))}
 
-                                            <div ref={messagesEndRef} className="h-24"></div>
+                                            <div ref={messagesEndRef} className="h-16 sm:h-24"></div>
 
                                         </div>
 
@@ -1235,9 +1235,9 @@ export function ChatPage() {
 
 
 
-                                    <div className="w-full pb-4 sm:pb-6 pt-4 z-40 bg-gradient-to-t from-zinc-900 to-transparent">
+                                    <div className="w-full pb-3 sm:pb-4 lg:pb-6 pt-3 sm:pt-4 z-40 bg-gradient-to-t from-zinc-900 to-transparent">
 
-                                        <div className="mx-auto max-w-4xl px-4 relative text-center">
+                                        <div className="mx-auto max-w-4xl px-3 sm:px-4 relative text-center">
 
                                             <QuotedTextPreview
 

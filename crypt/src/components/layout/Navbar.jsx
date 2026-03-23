@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/Button";
 import { cn } from "../../lib/utils";
-import { BookOpen, GraduationCap, LayoutGrid, MessageSquare, User, Settings, LogOut } from "lucide-react";
+import { BookOpen, GraduationCap, LayoutGrid, MessageSquare, User, Settings, LogOut, Menu, X } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import logo from "../../assets/image.png";
 
@@ -11,6 +11,7 @@ export function Navbar() {
     const location = useLocation();
     const { t, language, setLanguage } = useLanguage();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Auth Check
     const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -38,21 +39,31 @@ export function Navbar() {
     return (
         <nav className="fixed top-0 z-50 w-full border-b border-border-base dark:border-white/5 bg-background-base/80 backdrop-blur-xl">
             <div className="container relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link to="/home" className="flex items-center space-x-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg overflow-hidden shadow-lg">
+                <Link to="/home" className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg overflow-hidden shadow-lg">
                         <img src={logo} alt="DigiLab Logo" className="h-full w-full object-contain" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight text-foreground">DigiLab</span>
+                    <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">DigiLab</span>
                 </Link>
 
                 {/* Desktop Nav - Centered */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden items-center space-x-6 md:flex">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden items-center space-x-4 md:flex md:space-x-6">
                     <NavLink to="/home" icon={LayoutGrid}>{t('nav.home')}</NavLink>
                     {isLoggedIn && <NavLink to="/dashboard" icon={GraduationCap}>{t('nav.dashboard')}</NavLink>}
                     <NavLink to="/chat" icon={MessageSquare}>{t('nav.chat')}</NavLink>
                 </div>
 
                 <div className="flex items-center space-x-2 sm:space-x-4">
+                    {/* Mobile Menu Button */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                    </Button>
+
                     {/* Theme Toggle */}
                     <Button
                         variant="ghost"
@@ -67,7 +78,7 @@ export function Navbar() {
                                 localStorage.setItem('theme', 'dark');
                             }
                         }}
-                        className="text-foreground-muted hover:text-foreground"
+                        className="hidden sm:flex text-foreground-muted hover:text-foreground"
                     >
                         {/* Sun Icon (Visible in Dark) */}
                         <svg className="hidden h-5 w-5 dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,17 +90,15 @@ export function Navbar() {
                         </svg>
                     </Button>
 
-
-
                     {/* Settings Dropdown */}
                     <div className="relative">
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-9 w-9 rounded-full p-0"
+                            className="h-8 w-8 sm:h-9 sm:w-9 rounded-full p-0"
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         >
-                            <Settings className="h-5 w-5" />
+                            <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
 
                         <AnimatePresence>
@@ -168,6 +177,90 @@ export function Navbar() {
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Menu Overlay */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="md:hidden border-t border-border-base bg-background-base/95 backdrop-blur-xl"
+                    >
+                        <div className="container mx-auto max-w-7xl px-4 py-4 space-y-2">
+                            <Link
+                                to="/home"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                                    location.pathname === "/home" 
+                                        ? "bg-accent/20 text-accent" 
+                                        : "text-foreground-muted hover:text-foreground hover:bg-accent/10"
+                                )}
+                            >
+                                <LayoutGrid className="h-4 w-4" />
+                                <span>{t('nav.home')}</span>
+                            </Link>
+                            {isLoggedIn && (
+                                <Link
+                                    to="/dashboard"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className={cn(
+                                        "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                                        location.pathname === "/dashboard" 
+                                            ? "bg-accent/20 text-accent" 
+                                            : "text-foreground-muted hover:text-foreground hover:bg-accent/10"
+                                    )}
+                                >
+                                    <GraduationCap className="h-4 w-4" />
+                                    <span>{t('nav.dashboard')}</span>
+                                </Link>
+                            )}
+                            <Link
+                                to="/chat"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                                    location.pathname === "/chat" 
+                                        ? "bg-accent/20 text-accent" 
+                                        : "text-foreground-muted hover:text-foreground hover:bg-accent/10"
+                                )}
+                            >
+                                <MessageSquare className="h-4 w-4" />
+                                <span>{t('nav.chat')}</span>
+                            </Link>
+                            
+                            {/* Mobile Theme Toggle */}
+                            <div className="flex items-center justify-between px-3 py-2">
+                                <span className="text-sm font-medium text-foreground-muted">Theme</span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                        const html = document.documentElement;
+                                        if (html.classList.contains('dark')) {
+                                            html.classList.remove('dark');
+                                            localStorage.setItem('theme', 'light');
+                                        } else {
+                                            html.classList.add('dark');
+                                            localStorage.setItem('theme', 'dark');
+                                        }
+                                    }}
+                                    className="h-8 w-8"
+                                >
+                                    <svg className="hidden h-4 w-4 dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    <svg className="block h-4 w-4 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                    </svg>
+                                </Button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </nav>
     );
 }

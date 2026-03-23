@@ -10,6 +10,7 @@ import SagarImg from "../assets/sagar.png";
 import AtharvImg from "../assets/Atharv.jpeg";
 import SatyamImg from "../assets/satyam.jpg";
 import ShashwatiImg from "../assets/shashwati.png";
+import SathwikImg from "../assets/sathwik.jpg";
 
 const contributors = {
   teamLead: [
@@ -73,6 +74,13 @@ const contributors = {
       email: "banneatharv1010@gmail.com",
       github: "https://github.com/atharvbanne10",
       image: AtharvImg,
+    },
+    {
+      name: "Sathwik Chandra",
+      role: "Full Stack Developer",
+      linkedin: "https://www.linkedin.com/in/satwikchandra45/",
+      github: "https://github.com/SATWIKKKKK",
+      image: SathwikImg,
     },
   ],
 };

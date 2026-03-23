@@ -43,9 +43,9 @@ export function MessageBubble({ message }) {
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex w-full justify-end space-x-2 px-4 group"
+                className="flex w-full justify-end space-x-2 px-2 sm:px-4 group"
             >
-                <div className="max-w-[70%] rounded-2xl rounded-tr-sm bg-accent text-white px-4 py-2 text-sm leading-relaxed shadow-sm">
+                <div className="max-w-[85%] sm:max-w-[70%] rounded-2xl rounded-tr-sm bg-accent text-white px-3 sm:px-4 py-2 text-sm leading-relaxed shadow-sm">
 
                     {quoteMatch ? (
                         <div className="space-y-2">
@@ -77,39 +77,39 @@ export function MessageBubble({ message }) {
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex w-full justify-start space-x-3 px-4 group"
+            className="flex w-full justify-start space-x-2 sm:space-x-3 px-2 sm:px-4 group"
         >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 border border-accent/20">
-                <MdSmartToy size={18} className="text-accent" />
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 border border-accent/20">
+                <MdSmartToy size={14} className="sm:size-18 text-accent" />
             </div>
 
-            <div className="flex-1 min-w-0 max-w-full">
+            <div className="flex-1 min-w-0 max-w-full sm:max-w-[85%]">
                 <div className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
                     {formatMessage(message.content)}
                 </div>
 
                 {/* Actions */}
-                <div className="mt-2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
 
                     <button
                         onClick={handleCopy}
-                        className="flex items-center space-x-1 rounded-md px-2 py-1 text-xs text-foreground-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        className="flex items-center space-x-1 rounded-md px-1 sm:px-2 py-1 text-xs text-foreground-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                         title="Copy"
                     >
-                        {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
-                        <span>{copied ? 'Copied' : 'Copy'}</span>
+                        {copied ? <MdCheck size={12} /> : <MdContentCopy size={12} />}
+                        <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
                     </button>
 
                     <button
                         onClick={handleSpeak}
-                        className="flex items-center space-x-1 rounded-md px-2 py-1 text-xs text-foreground-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        className="flex items-center space-x-1 rounded-md px-1 sm:px-2 py-1 text-xs text-foreground-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                         title="Read aloud"
                     >
-                        <MdVolumeUp size={14} />
-                        <span>Read aloud</span>
+                        <MdVolumeUp size={12} />
+                        <span className="hidden sm:inline">Read aloud</span>
                     </button>
 
-                    <span className="text-[10px] text-foreground-muted opacity-60 ml-2">
+                    <span className="text-[10px] text-foreground-muted opacity-60 ml-auto">
                         {message.timestamp}
                     </span>
 
